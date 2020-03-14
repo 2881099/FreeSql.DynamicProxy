@@ -4,12 +4,9 @@ The dynamic proxy integration enables method calls on The .NetCore or .NetFramew
 
 > dotnet add package FreeSql.DynamicProxy
 
-Or
-
 > Install-Package FreeSql.DynamicProxy
 
 ```csharp
-
 using System;
 using System.Threading.Tasks;
 
@@ -37,31 +34,31 @@ public class MyClass
     }
 }
 
-class CacheAttribute : Attribute, FreeSql.DynamicProxy.IDynamicProxy
+class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public void Before(FreeSql.DynamicProxy.Arguments args)
+    public override void Before(FreeSql.DynamicProxy.Arguments args)
     {
         if (args.MemberInfo.Name == "Get")
+        {
             args.ReturnValue = "Before Get NewValue";
-
+        }
         if (args.MemberInfo.Name == "Text")
+        {
             args.ReturnValue = "Before Text NewValue";
+        }
     }
-    public void After(FreeSql.DynamicProxy.Arguments args)
+    public override void After(FreeSql.DynamicProxy.Arguments args)
     {
     }
 
-    public Task BeforeAsync(FreeSql.DynamicProxy.Arguments args)
+    public override Task BeforeAsync(FreeSql.DynamicProxy.Arguments args)
     {
         if (args.MemberInfo.Name == "GetAsync")
+        {
             args.ReturnValue = "BeforeAsync GetAsync NewValue";
-
-        return Task.CompletedTask;
-    }
-    public Task AfterAsync(FreeSql.DynamicProxy.Arguments args)
-    {
+        }
         return Task.CompletedTask;
     }
 }

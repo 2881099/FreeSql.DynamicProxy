@@ -29,7 +29,7 @@ namespace FreeSql
             /// <summary>
             /// 生效的特性
             /// </summary>
-            public Attribute Attribute { get; }
+            public DynamicProxyAttribute Attribute { get; }
 
             /// <summary>
             /// 是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
@@ -56,7 +56,7 @@ namespace FreeSql
             /// </summary>
             public Dictionary<string, object> AfterBag { get; }
 
-            public Arguments(object sender, InjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, Attribute attribute, object returnValue, Dictionary<string, object> bag)
+            public Arguments(object sender, InjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, DynamicProxyAttribute attribute, object returnValue, Dictionary<string, object> bag)
             {
                 this.Sender = sender;
                 this.InjectorType = injectorType;

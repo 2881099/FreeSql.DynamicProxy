@@ -15,8 +15,7 @@ namespace FreeSql
             public Dictionary<int, ConstructorInfo[]> SourceConstructorsMergeParametersLength { get; }
 
             public MemberInfo[] MatchedMemberInfos { get; }
-            public Attribute[] MatchedAttributes { get; }
-            public IDynamicProxy[] MatchedDynamicProxys { get; }
+            public DynamicProxyAttribute[] MatchedAttributes { get; }
 
             public string ProxyCSharpCode { get; }
             public string ProxyClassName { get; }
@@ -25,7 +24,7 @@ namespace FreeSql
 
             internal Meta(
                 Type sourceType, ConstructorInfo[] constructors,
-                MemberInfo[] matchedMemberInfos, Attribute[] matchedAttributes, IDynamicProxy[] matchedDynamicProxys,
+                MemberInfo[] matchedMemberInfos, DynamicProxyAttribute[] matchedAttributes, 
                 string proxyCSharpCode, string proxyClassName, Assembly proxyAssembly, Type proxyType)
             {
 
@@ -37,7 +36,6 @@ namespace FreeSql
 
                 this.MatchedMemberInfos = matchedMemberInfos;
                 this.MatchedAttributes = matchedAttributes;
-                this.MatchedDynamicProxys = matchedDynamicProxys;
 
                 this.ProxyCSharpCode = proxyCSharpCode;
                 this.ProxyClassName = proxyClassName;

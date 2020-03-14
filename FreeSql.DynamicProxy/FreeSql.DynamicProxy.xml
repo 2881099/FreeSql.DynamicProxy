@@ -80,31 +80,31 @@
             <param name="parameters"></param>
             <returns></returns>
         </member>
-        <member name="T:FreeSql.DynamicProxy.IDynamicProxy">
+        <member name="T:FreeSql.DynamicProxyAttribute">
             <summary>
             此接口由 Attribute 特性实现功能
             </summary>
         </member>
-        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.Before(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxy.Arguments)">
             <summary>
             同步方法执行之前
             </summary>
             <param name="args"></param>
         </member>
-        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.After(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxy.Arguments)">
             <summary>
             同步方法执行之后
             </summary>
             <param name="args"></param>
         </member>
-        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.BeforeAsync(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.BeforeAsync(FreeSql.DynamicProxy.Arguments)">
             <summary>
             异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
             </summary>
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.AfterAsync(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.AfterAsync(FreeSql.DynamicProxy.Arguments)">
             <summary>
             异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
             </summary>

@@ -25,11 +25,11 @@ public class MyClass
     }
 }
 
-class CacheAttribute : Attribute, FreeSql.DynamicProxy.IDynamicProxy
+class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public void Before(FreeSql.DynamicProxy.Arguments args)
+    public override void Before(FreeSql.DynamicProxy.Arguments args)
     {
         if (args.MemberInfo.Name == "Get")
         {
@@ -40,11 +40,11 @@ class CacheAttribute : Attribute, FreeSql.DynamicProxy.IDynamicProxy
             args.ReturnValue = "Before Text NewValue";
         }
     }
-    public void After(FreeSql.DynamicProxy.Arguments args)
+    public override void After(FreeSql.DynamicProxy.Arguments args)
     {
     }
 
-    public Task BeforeAsync(FreeSql.DynamicProxy.Arguments args)
+    public override Task BeforeAsync(FreeSql.DynamicProxy.Arguments args)
     {
         if (args.MemberInfo.Name == "GetAsync")
         {
@@ -52,7 +52,7 @@ class CacheAttribute : Attribute, FreeSql.DynamicProxy.IDynamicProxy
         }
         return Task.CompletedTask;
     }
-    public Task AfterAsync(FreeSql.DynamicProxy.Arguments args)
+    public override Task AfterAsync(FreeSql.DynamicProxy.Arguments args)
     {
         return Task.CompletedTask;
     }

@@ -41,7 +41,7 @@ namespace FreeSql
         static readonly string _metaName = typeof(Meta).CSharpFullName();
         static readonly string _argumentName = typeof(Arguments).CSharpFullName();
         static readonly string _injectorTypeName = typeof(InjectorType).CSharpFullName();
-        static readonly string _idynamicProxyName = typeof(IDynamicProxy).CSharpFullName();
+        static readonly string _idynamicProxyName = typeof(DynamicProxyAttribute).CSharpFullName();
 
         public static Meta Test(Type type, bool isCompile = true, bool isThrow = true)
         {
@@ -55,8 +55,7 @@ namespace FreeSql
             }
 
             var matchedMemberInfos = new List<MemberInfo>();
-            var matchedAttributes = new List<Attribute>();
-            var matchedDynamicProxys = new List<IDynamicProxy>();
+            var matchedAttributes = new List<DynamicProxyAttribute>();
             var className = $"AopProxyClass___{Guid.NewGuid().ToString("N")}";
             var methodOverrideSb = new StringBuilder();
             var sb = methodOverrideSb;
@@ -70,8 +69,8 @@ namespace FreeSql
                     sbt.Append($@"
         //{proxyMethodName}{a}{(proxyMethodName == "Before" ? $"\r\n      var __AE_ARG___bag{a} = new Dictionary<string, object>()" : "")};
         __AE_ARG = new {_argumentName}(__AE_Source, {_injectorTypeName}.{injectorType.ToString()}, __AE_Meta.MatchedMemberInfos[{a}], __AE_ARG__parameters, __AE_Meta.MatchedAttributes[{a}], {(returnType == typeof(void) || proxyMethodName == "Before" ? "null" : "__AE_ARG_source_return")}, __AE_ARG___bag{a});
-        __AE_ARG___dynamicproxy = __AE_Meta.MatchedDynamicProxys[{a}];
-        {(isAsync ? "await " : "")}__AE_ARG___dynamicproxy.{proxyMethodName}{(isAsync ? "Async" : "")}(__AE_ARG);");
+        __AE_ARG___attribute = __AE_Meta.MatchedAttributes[{a}];
+        {(isAsync ? "await " : "")}__AE_ARG___attribute.{proxyMethodName}{(isAsync ? "Async" : "")}(__AE_ARG);");
 
                     if (injectorType == InjectorType.PropertySet)
                         sbt.Append($@"
@@ -94,12 +93,11 @@ namespace FreeSql
             {
                 if (method.Name.StartsWith("get_") || method.Name.StartsWith("set_"))
                     if (type.GetProperty(method.Name.Substring(4), BindingFlags.Instance | BindingFlags.Public) != null) continue;
-                var attrs = method.GetCustomAttributes(false).Select(a => a as Attribute).Where(a => a is IDynamicProxy).ToArray();
+                var attrs = method.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).ToArray();
                 if (attrs.Any() == false) continue;
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => method));
                 matchedAttributes.AddRange(attrs);
-                matchedDynamicProxys.AddRange(attrs.Select(a => a as IDynamicProxy));
                 if (method.IsVirtual == false)
                 {
                     if (isThrow) throw new ArgumentException($"FreeSql.DynamicProxy 失败提示：{typeCSharpName} 方法 {method.Name} 需要使用 virtual 标记");
@@ -119,7 +117,7 @@ namespace FreeSql
     {(methodIsAsync ? "async " : "")}{(method.IsPrivate ? "private " : "")}{(method.IsFamily ? "protected " : "")}{(method.IsAssembly ? "internal " : "")}{(method.IsPublic ? "public " : "")}{(method.IsStatic ? "static " : "")}{(method.IsAbstract ? "abstract " : "")}{(method.IsVirtual ? "override " : "")}{method.ReturnType.CSharpFullName()} {method.Name}({string.Join(", ", method.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
     {{
         {_argumentName} __AE_ARG = null;
-        {_idynamicProxyName} __AE_ARG___dynamicproxy = null;
+        {_idynamicProxyName} __AE_ARG___attribute = null;
         var __AE_ARG__parameters = new Dictionary<string, object>();{string.Join("\r\n        ", method.GetParameters().Select(a => $"__AE_ARG__parameters.Add(\"{a.Name}\", {a.Name});"))}
         {getMatchedAttributesCode(returnType, FreeSql.DynamicProxy.InjectorType.Method, methodIsAsync, attrsIndex, "Before")}
 
@@ -145,18 +143,18 @@ namespace FreeSql
                     return null;
                 }
 
-                var attrs = prop2.GetCustomAttributes(false).Select(a => a as Attribute).Where(a => a is IDynamicProxy).ToArray();
+                var attrs = prop2.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).ToArray();
                 var prop2AttributeAny = attrs.Any();
                 var getMethodAttributeAny = prop2AttributeAny;
                 var setMethodAttributeAny = prop2AttributeAny;
                 if (attrs.Any() == false && getMethod?.IsVirtual == true)
                 {
-                    attrs = getMethod.GetCustomAttributes(false).Select(a => a as Attribute).Where(a => a is IDynamicProxy).ToArray();
+                    attrs = getMethod.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).ToArray();
                     getMethodAttributeAny = attrs.Any();
                 }
                 if (attrs.Any() == false && setMethod?.IsVirtual == true)
                 {
-                    attrs = setMethod.GetCustomAttributes(false).Select(a => a as Attribute).Where(a => a is IDynamicProxy).ToArray();
+                    attrs = setMethod.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).ToArray();
                     setMethodAttributeAny = attrs.Any();
                 }
                 if (attrs.Any() == false) continue;
@@ -164,7 +162,6 @@ namespace FreeSql
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => prop2));
                 matchedAttributes.AddRange(attrs);
-                matchedDynamicProxys.AddRange(attrs.Select(a => a as IDynamicProxy));
 
                 var returnTypeCSharpName = prop2.PropertyType.CSharpFullName();
 
@@ -185,7 +182,7 @@ namespace FreeSql
         get
         {{
             {_argumentName} __AE_ARG = null;
-            {_idynamicProxyName} __AE_ARG___dynamicproxy = null;
+            {_idynamicProxyName} __AE_ARG___attribute = null;
             var __AE_ARG__parameters = new Dictionary<string, object>();
             {getMatchedAttributesCode(prop2.PropertyType, InjectorType.PropertyGet, false, attrsIndex, "Before")}
 
@@ -207,7 +204,7 @@ namespace FreeSql
         set
         {{
             {_argumentName} __AE_ARG = null;
-            {_idynamicProxyName} __AE_ARG___dynamicproxy = null;
+            {_idynamicProxyName} __AE_ARG___attribute = null;
             var __AE_ARG__parameters = new Dictionary<string, object>();
             __AE_ARG__parameters.Add(""value"", value);
             {getMatchedAttributesCode(prop2.PropertyType, InjectorType.PropertySet, false, attrsIndex, "Before").Replace("__base__property__value__", $"__AE_Source.{prop2.Name}")}
@@ -250,7 +247,7 @@ public class {className} : {typeCSharpName}
 
             return new Meta(
                 type, type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic),
-                matchedMemberInfos.ToArray(), matchedAttributes.ToArray(), matchedDynamicProxys.ToArray(),
+                matchedMemberInfos.ToArray(), matchedAttributes.ToArray(),
                 isCompile == false ? proxyCscode : null, className, proxyAssembly, proxyType);
         }
 
@@ -261,7 +258,7 @@ public class {className} : {typeCSharpName}
             var compiler = new CSScriptLib.RoslynEvaluator();
             compiler.DisableReferencingFromCode = false;
             compiler
-                .ReferenceAssemblyOf<IDynamicProxy>()
+                .ReferenceAssemblyOf<DynamicProxyAttribute>()
                 .ReferenceDomainAssemblies();
             return compiler;
         });
