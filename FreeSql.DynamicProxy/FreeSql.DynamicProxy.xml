@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FreeSql.DynamicProxy</name>
+    </assembly>
+    <members>
+        <member name="T:FreeSql.DynamicProxy">
+            <summary>
+            DynamicProxy 快速使用类
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.Sender">
+            <summary>
+            真实目标实例
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.InjectorType">
+            <summary>
+            生效的类型
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.MemberInfo">
+            <summary>
+            方法或属性反射信息
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.Parameters">
+            <summary>
+            方法或属性，执行时候的参数值
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.Attribute">
+            <summary>
+            生效的特性
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.IsReturn">
+            <summary>
+            是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.ReturnValue">
+            <summary>
+            拦截自定义返回值<para></para>
+            如果方法返回类型为 void，设置 null 即可
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxy.Arguments.AfterBag">
+            <summary>
+            Before/After 共用包
+            </summary>
+        </member>
+        <member name="F:FreeSql.DynamicProxy.InjectorType.Method">
+            <summary>
+            方法代理
+            </summary>
+        </member>
+        <member name="F:FreeSql.DynamicProxy.InjectorType.PropertyGet">
+            <summary>
+            属性Get代理
+            </summary>
+        </member>
+        <member name="F:FreeSql.DynamicProxy.InjectorType.PropertySet">
+            <summary>
+            属性Set代理
+            </summary>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.CreateInstanse``1">
+            <summary>
+            创建 FreeSql.DynamicProxy 代理对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.CreateInstanse(System.Type,System.Object[])">
+            <summary>
+            创建 FreeSql.DynamicProxy 代理对象
+            </summary>
+            <param name="type"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="T:FreeSql.DynamicProxy.IDynamicProxy">
+            <summary>
+            此接口由 Attribute 特性实现功能
+            </summary>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.Before(FreeSql.DynamicProxy.Arguments)">
+            <summary>
+            同步方法执行之前
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.After(FreeSql.DynamicProxy.Arguments)">
+            <summary>
+            同步方法执行之后
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.BeforeAsync(FreeSql.DynamicProxy.Arguments)">
+            <summary>
+            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FreeSql.DynamicProxy.IDynamicProxy.AfterAsync(FreeSql.DynamicProxy.Arguments)">
+            <summary>
+            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FreeSql.InternalExtensions.CSharpFullName(System.Type)">
+            <summary>
+            获取 Type 的原始 c# 文本表示
+            </summary>
+            <param name="that"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
