@@ -38,7 +38,7 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public override void Before(FreeSql.DynamicProxy.Arguments args)
+    public override void Before(FreeSql.DynamicProxyArguments args)
     {
         if (args.MemberInfo.Name == "Get")
         {
@@ -49,16 +49,20 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
             args.ReturnValue = "Before Text NewValue";
         }
     }
-    public override void After(FreeSql.DynamicProxy.Arguments args)
+    public override void After(FreeSql.DynamicProxyArguments args)
     {
     }
 
-    public override Task BeforeAsync(FreeSql.DynamicProxy.Arguments args)
+    public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
     {
         if (args.MemberInfo.Name == "GetAsync")
         {
             args.ReturnValue = "BeforeAsync GetAsync NewValue";
         }
+        return Task.CompletedTask;
+    }
+    public override Task AfterAsync(FreeSql.DynamicProxyArguments args)
+    {
         return Task.CompletedTask;
     }
 }

@@ -16,13 +16,13 @@ namespace FreeSql
         /// 同步方法执行之前
         /// </summary>
         /// <param name="args"></param>
-        public virtual void Before(Arguments args) { }
+        public virtual void Before(DynamicProxyArguments args) { }
 
         /// <summary>
         /// 同步方法执行之后
         /// </summary>
         /// <param name="args"></param>
-        public virtual void After(Arguments args) { }
+        public virtual void After(DynamicProxyArguments args) { }
 
 
 #if net40
@@ -32,13 +32,13 @@ namespace FreeSql
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task BeforeAsync(Arguments args) => Task.FromResult(false);
+        public virtual Task BeforeAsync(DynamicProxyArguments args) => Task.FromResult(false);
         /// <summary>
         /// 异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task AfterAsync(Arguments args) => Task.FromResult(false);
+        public virtual Task AfterAsync(DynamicProxyArguments args) => Task.FromResult(false);
 #endif
 
     }

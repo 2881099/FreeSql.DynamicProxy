@@ -9,46 +9,20 @@
             DynamicProxy 快速使用类
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.Sender">
+        <member name="M:FreeSql.DynamicProxy.CreateInstanse``1">
             <summary>
-            真实目标实例
+            创建 FreeSql.DynamicProxy 代理对象
             </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
         </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.InjectorType">
+        <member name="M:FreeSql.DynamicProxy.CreateInstanse(System.Type,System.Object[])">
             <summary>
-            生效的类型
+            创建 FreeSql.DynamicProxy 代理对象
             </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.MemberInfo">
-            <summary>
-            方法或属性反射信息
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.Parameters">
-            <summary>
-            方法或属性，执行时候的参数值
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.Attribute">
-            <summary>
-            生效的特性
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.IsReturn">
-            <summary>
-            是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.ReturnValue">
-            <summary>
-            拦截自定义返回值<para></para>
-            如果方法返回类型为 void，设置 null 即可
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxy.Arguments.AfterBag">
-            <summary>
-            Before/After 共用包
-            </summary>
+            <param name="type"></param>
+            <param name="parameters"></param>
+            <returns></returns>
         </member>
         <member name="F:FreeSql.DynamicProxy.InjectorType.Method">
             <summary>
@@ -65,51 +39,63 @@
             属性Set代理
             </summary>
         </member>
-        <member name="M:FreeSql.DynamicProxy.CreateInstanse``1">
+        <member name="P:FreeSql.DynamicProxyArguments.Sender">
             <summary>
-            创建 FreeSql.DynamicProxy 代理对象
+            真实目标实例
             </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
         </member>
-        <member name="M:FreeSql.DynamicProxy.CreateInstanse(System.Type,System.Object[])">
+        <member name="P:FreeSql.DynamicProxyArguments.InjectorType">
             <summary>
-            创建 FreeSql.DynamicProxy 代理对象
+            生效的类型
             </summary>
-            <param name="type"></param>
-            <param name="parameters"></param>
-            <returns></returns>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.MemberInfo">
+            <summary>
+            方法或属性反射信息
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.Parameters">
+            <summary>
+            方法或属性，执行时候的参数值
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.Attribute">
+            <summary>
+            生效的特性
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.IsReturn">
+            <summary>
+            是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.ReturnValue">
+            <summary>
+            拦截自定义返回值<para></para>
+            如果方法返回类型为 void，设置 null 即可
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyArguments.AfterBag">
+            <summary>
+            Before/After 共用包
+            </summary>
         </member>
         <member name="T:FreeSql.DynamicProxyAttribute">
             <summary>
-            此接口由 Attribute 特性实现功能
+            实现该特性，标记的方法/属性支持动态代理
             </summary>
         </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxyArguments)">
             <summary>
             同步方法执行之前
             </summary>
             <param name="args"></param>
         </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxy.Arguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyArguments)">
             <summary>
             同步方法执行之后
             </summary>
             <param name="args"></param>
-        </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.BeforeAsync(FreeSql.DynamicProxy.Arguments)">
-            <summary>
-            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
-            </summary>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.AfterAsync(FreeSql.DynamicProxy.Arguments)">
-            <summary>
-            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
-            </summary>
-            <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="M:FreeSql.InternalExtensions.CSharpFullName(System.Type)">
             <summary>

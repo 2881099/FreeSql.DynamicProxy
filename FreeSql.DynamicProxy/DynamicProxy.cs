@@ -39,7 +39,7 @@ namespace FreeSql
         }
 
         static readonly string _metaName = typeof(Meta).CSharpFullName();
-        static readonly string _argumentName = typeof(Arguments).CSharpFullName();
+        static readonly string _argumentName = typeof(DynamicProxyArguments).CSharpFullName();
         static readonly string _injectorTypeName = typeof(InjectorType).CSharpFullName();
         static readonly string _idynamicProxyName = typeof(DynamicProxyAttribute).CSharpFullName();
 
@@ -131,7 +131,7 @@ namespace FreeSql
 
             var propertyOverrideSb = new StringBuilder();
             sb = propertyOverrideSb;
-#region Property
+            #region Property
             var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
             foreach (var prop2 in props)
             {
