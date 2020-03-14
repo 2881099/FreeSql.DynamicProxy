@@ -97,6 +97,20 @@
             </summary>
             <param name="args"></param>
         </member>
+        <member name="M:FreeSql.DynamicProxyAttribute.BeforeAsync(FreeSql.DynamicProxyArguments)">
+            <summary>
+            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FreeSql.DynamicProxyAttribute.AfterAsync(FreeSql.DynamicProxyArguments)">
+            <summary>
+            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
         <member name="M:FreeSql.InternalExtensions.CSharpFullName(System.Type)">
             <summary>
             获取 Type 的原始 c# 文本表示

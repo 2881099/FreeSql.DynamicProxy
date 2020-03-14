@@ -6,6 +6,10 @@ using System.Reflection;
 using System.Text;
 using System.IO;
 
+#if netstandard
+using Natasha;
+#endif
+
 namespace FreeSql
 {
     /// <summary>
@@ -253,26 +257,13 @@ public class {className} : {typeCSharpName}
 
 #if netstandard
 
-        static Lazy<CSScriptLib.RoslynEvaluator> _compiler = new Lazy<CSScriptLib.RoslynEvaluator>(() =>
-        {
-            var compiler = new CSScriptLib.RoslynEvaluator();
-            compiler.DisableReferencingFromCode = false;
-            compiler
-                .ReferenceAssemblyOf<DynamicProxyAttribute>()
-                .ReferenceDomainAssemblies();
-            return compiler;
-        });
 
         static Assembly CompileCode(string cscode)
         {
-            try
-            {
-                return _compiler.Value.CompileCode(cscode);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{ex.Message} {cscode}", ex);
-            }
+            AssemblyComplier complier = new AssemblyComplier();
+            //complier.Domain = DomainManagment.Random;
+            complier.Add(cscode);
+            return complier.GetAssembly();
         }
 
 #else
