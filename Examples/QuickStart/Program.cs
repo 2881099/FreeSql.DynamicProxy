@@ -44,16 +44,13 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
     {
     }
 
+    //Intercept asynchronous methods
     public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
     {
         if (args.MemberInfo.Name == "GetAsync")
         {
             args.ReturnValue = "BeforeAsync GetAsync NewValue";
         }
-        return Task.CompletedTask;
-    }
-    public override Task AfterAsync(FreeSql.DynamicProxyArguments args)
-    {
         return Task.CompletedTask;
     }
 }
