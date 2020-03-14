@@ -6,8 +6,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>YeXiangQin</Authors>
     <Description>The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+, Support asynchronous method and property interception</Description>
-    <PackageProjectUrl>https://github.com/2881099/FreeSql</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/2881099/FreeSql</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/2881099/FreeSql.DynamicProxy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/2881099/FreeSql.DynamicProxy</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>DynamicProxy;Aspect;AOP;Inject</PackageTags>
