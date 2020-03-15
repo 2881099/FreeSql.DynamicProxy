@@ -11,6 +11,7 @@ public class MyClass
         return "MyClass.Get value";
     }
 
+    [Cache2(Key = "GetAsync")]
     [Cache(Key = "GetAsync")]
     async public virtual Task<string> GetAsync()
     {
@@ -27,6 +28,27 @@ public class MyClass
 
     public string T2 { get; set; }
 }
+
+class Cache2Attribute : FreeSql.DynamicProxyAttribute
+{
+    public string Key { get; set; }
+
+    public override void Before(FreeSql.DynamicProxyArguments args)
+    {
+        ;
+    }
+    public override void After(FreeSql.DynamicProxyArguments args)
+    {
+    }
+
+    //Intercept asynchronous methods, Comment code will execute synchronization method
+    //public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
+    //{
+    //    args.ReturnValue = string.Concat(args.ReturnValue, " BeforeAsync Changed");
+    //    return Task.CompletedTask;
+    //}
+}
+
 
 class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
