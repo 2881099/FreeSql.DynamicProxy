@@ -11,8 +11,8 @@ public class MyClass
         return "MyClass.Get value";
     }
 
-    [Cache2(Key = "GetAsync")]
     [Cache(Key = "GetAsync")]
+    [Cache2(Key = "GetAsync")]
     async public virtual Task<string> GetAsync()
     {
         await Task.Yield();
@@ -33,11 +33,11 @@ class Cache2Attribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public override Task Before(FreeSql.DynamicProxyArguments args)
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
     {
         return base.Before(args);
     }
-    public override Task After(FreeSql.DynamicProxyArguments args)
+    public override Task After(FreeSql.DynamicProxyAfterArguments args)
     {
         return base.After(args);
     }
@@ -48,13 +48,14 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public override Task Before(FreeSql.DynamicProxyArguments args)
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
     {
         args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
         return base.Before(args);
     }
-    public override Task After(DynamicProxyArguments args)
+    public override Task After(DynamicProxyAfterArguments args)
     {
+        args.ExceptionHandled = true;
         return base.After(args);
     }
 }
@@ -65,7 +66,7 @@ class Program
     {
         FreeSql.DynamicProxy.GetAvailableMeta(typeof(MyClass)); //The first dynamic compilation was slow
 
-        DateTime dt = DateTime.Now;
+        var dt = DateTime.Now;
         var pxy = new MyClass { T2 = "123123" }.ToDynamicProxy();
         Console.WriteLine(pxy.Get());
         Console.WriteLine(pxy.GetAsync().Result);

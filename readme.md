@@ -1,4 +1,7 @@
-The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+, Support asynchronous method and property interception.
+The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+.
+
+- Support asynchronous method and property interception
+- One method supports multiple AOP features and can take effect at the same time
 
 ## Install
 
@@ -60,20 +63,15 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
 {
     public string Key { get; set; }
 
-    public override void Before(FreeSql.DynamicProxyArguments args)
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
     {
         args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
+        return base.Before(args);
     }
-    public override void After(FreeSql.DynamicProxyArguments args)
+    public override Task After(DynamicProxyAfterArguments args)
     {
+        return base.After(args);
     }
-
-    //Intercept asynchronous methods, Comment code will execute synchronization method
-    //public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
-    //{
-    //    args.ReturnValue = string.Concat(args.ReturnValue, " BeforeAsync Changed");
-    //    return Task.CompletedTask;
-    //}
 }
 
 class Program
@@ -82,7 +80,7 @@ class Program
     {
         FreeSql.DynamicProxy.GetAvailableMeta(typeof(MyClass)); //The first dynamic compilation was slow
 
-        DateTime dt = DateTime.Now;
+        var dt = DateTime.Now;
         var pxy = new MyClass { T2 = "123123" }.ToDynamicProxy();
         Console.WriteLine(pxy.Get());
         Console.WriteLine(pxy.GetAsync().Result);

@@ -36,7 +36,6 @@ namespace AspNetCore
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
@@ -99,12 +98,12 @@ namespace AspNetCore
     {
         public string Key { get; set; }
 
-        public override Task Before(FreeSql.DynamicProxyArguments args)
+        public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
         {
             args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
             return base.Before(args);
         }
-        public override Task After(FreeSql.DynamicProxyArguments args)
+        public override Task After(FreeSql.DynamicProxyAfterArguments args)
         {
             return base.After(args);
         }

@@ -31,9 +31,11 @@ namespace FreeSql
         }
 
         static readonly string _metaName = typeof(DynamicProxyMeta).CSharpFullName();
-        static readonly string _argumentName = typeof(DynamicProxyArguments).CSharpFullName();
+        static readonly string _beforeAgumentsName = typeof(DynamicProxyBeforeArguments).CSharpFullName();
+        static readonly string _afterAgumentsName = typeof(DynamicProxyAfterArguments).CSharpFullName();
         static readonly string _injectorTypeName = typeof(DynamicProxyInjectorType).CSharpFullName();
         static readonly string _idynamicProxyName = typeof(DynamicProxyAttribute).CSharpFullName();
+        static readonly string _dynamicProxyExceptionName = typeof(DynamicProxyException).CSharpFullName();
 
         public static DynamicProxyMeta GetAvailableMeta(Type type)
         {
@@ -58,34 +60,35 @@ namespace FreeSql
             var methodOverrideSb = new StringBuilder();
             var sb = methodOverrideSb;
 
-            #region Common
+            #region Common Code
             Func<Type, DynamicProxyInjectorType, bool, int, string, string> getMatchedAttributesCode = (returnType, injectorType, isAsync, attrsIndex, proxyMethodName) =>
             {
                 var sbt = new StringBuilder();
                 for (var a = attrsIndex; a < matchedAttributes.Count; a++)
                 {
                     sbt.Append($@"
-        //{proxyMethodName}{a}{(proxyMethodName == "Before" ? $"\r\n      var __DP_ARG___bag{a} = new Dictionary<string, object>()" : "")};
-        __DP_ARG = new {_argumentName}(this, {_injectorTypeName}.{injectorType.ToString()}, __DP_Meta.MatchedMemberInfos[{a}], __DP_ARG__parameters, __DP_Meta.MatchedAttributes[{a}], {(returnType == typeof(void) || proxyMethodName == "Before" ? "null" : "__DP_ARG_source_return")}, __DP_ARG___bag{a});
-        __DP_ARG___attribute = __DP_Meta.MatchedAttributes[{a}];
-        {(isAsync ? "await " : "")}__DP_ARG___attribute.{proxyMethodName}(__DP_ARG);");
-
-                    if (injectorType == DynamicProxyInjectorType.PropertySet)
-                        sbt.Append($@"
-        if (__DP_ARG.IsReturn)
+        var __DP_ARG___{proxyMethodName}{a} = new {(proxyMethodName == "Before" ? _beforeAgumentsName : _afterAgumentsName)}(this, {_injectorTypeName}.{injectorType.ToString()}, __DP_Meta.MatchedMemberInfos[{a}], __DP_ARG___parameters, __DP_Meta.MatchedAttributes[{a}], null, {(proxyMethodName == "Before" ? "null" : "__DP_ARG___exception")});
+        {(isAsync ? "await " : "")}__DP_Meta.MatchedAttributes[{a}].{proxyMethodName}(__DP_ARG___{proxyMethodName}{a});
+        {(proxyMethodName == "Before" ? 
+        $@"if (__DP_ARG___is_return == false)
         {{
-            __base__property__value__ = {(returnType.IsValueType ? $"({returnType.CSharpFullName()})__DP_ARG.ReturnValue;" : $"__DP_ARG.ReturnValue as {returnType.CSharpFullName()};")}
-            return;
-        }}");
-                    else
-                        sbt.Append($@"
-        if (__DP_ARG.IsReturn) {(returnType == typeof(void) ? "return;" : (isAsync == false && returnType.IsTask() ? 
-                        (returnType.ReturnTypeWithoutTask().IsValueType ? 
-                            $"return __DP_ARG.ReturnValue == null ? null : (__DP_ARG.ReturnValue.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(({returnType.ReturnTypeWithoutTask().CSharpFullName()})__DP_ARG.ReturnValue) : ({returnType.CSharpFullName()})__DP_ARG.ReturnValue);" : 
-                            $"return __DP_ARG.ReturnValue == null ? null : (__DP_ARG.ReturnValue.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(__DP_ARG.ReturnValue as {returnType.ReturnTypeWithoutTask().CSharpFullName()}) : ({returnType.CSharpFullName()})__DP_ARG.ReturnValue);"
-                        )  : 
-                        (returnType.IsValueType ? $"return ({returnType.CSharpFullName()})__DP_ARG.ReturnValue;" : $"return __DP_ARG.ReturnValue as {returnType.CSharpFullName()};")))}");
+            __DP_ARG___is_return = __DP_ARG___{proxyMethodName}{a}.IsReturn;{(returnType != typeof(void) ? $@"
+            if (__DP_ARG___is_return) __DP_ARG___return_value = __DP_ARG___{proxyMethodName}{a}.ReturnValue;" : "")}
+        }}" : 
+        $"if (__DP_ARG___{proxyMethodName}{a}.Exception != null && __DP_ARG___{proxyMethodName}{a}.ExceptionHandled == false) throw __DP_ARG___{proxyMethodName}{a}.Exception;")}");
                 }
+                return sbt.ToString();
+            };
+            Func<Type, DynamicProxyInjectorType, bool, string, string> getMatchedAttributesCodeReturn = (returnType, injectorType, isAsync, basePropertyValueTpl) =>
+            {
+                var sbt = new StringBuilder();
+                sbt.Append($@"
+        {(returnType == typeof(void) ? "return;" : (isAsync == false && returnType.IsTask() ?
+                (returnType.ReturnTypeWithoutTask().IsValueType ?
+                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(({returnType.ReturnTypeWithoutTask().CSharpFullName()})__DP_ARG___return_value) : ({returnType.CSharpFullName()})__DP_ARG___return_value);" :
+                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(__DP_ARG___return_value as {returnType.ReturnTypeWithoutTask().CSharpFullName()}) : ({returnType.CSharpFullName()})__DP_ARG___return_value);"
+                ) :
+                (returnType.IsValueType ? $"return ({returnType.CSharpFullName()})__DP_ARG___return_value;" : $"return __DP_ARG___return_value as {returnType.CSharpFullName()};")))}");
                 return sbt.ToString();
             };
             #endregion
@@ -129,15 +132,21 @@ namespace FreeSql
 
     {(methodIsAsync ? "async " : "")}{(method.IsPrivate ? "private " : "")}{(method.IsFamily ? "protected " : "")}{(method.IsAssembly ? "internal " : "")}{(method.IsPublic ? "public " : "")}{(method.IsStatic ? "static " : "")}{(method.IsAbstract ? "abstract " : "")}{(method.IsVirtual ? "override " : "")}{method.ReturnType.CSharpFullName()} {method.Name}({string.Join(", ", method.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
     {{
-        {_argumentName} __DP_ARG = null;
-        {_idynamicProxyName} __DP_ARG___attribute = null;
-        var __DP_ARG__parameters = new Dictionary<string, object>();{string.Join("\r\n        ", method.GetParameters().Select(a => $"__DP_ARG__parameters.Add(\"{a.Name}\", {a.Name});"))}
+        Exception __DP_ARG___exception = null;
+        var __DP_ARG___is_return = false;{(returnType != typeof(void) ? "\r\n        object __DP_ARG___return_value = null;" : "")}
+        var __DP_ARG___parameters = new Dictionary<string, object>();{string.Join("\r\n        ", method.GetParameters().Select(a => $"__DP_ARG___parameters.Add(\"{a.Name}\", {a.Name});"))}
         {getMatchedAttributesCode(returnType, DynamicProxyInjectorType.Method, methodIsAsync, attrsIndex, "Before")}
 
-        {(returnType != typeof(void) ? "var __DP_ARG_source_return = " : "")}{(methodIsAsync ? "await " : "")}base.{method.Name}({(string.Join(", ", method.GetParameters().Select(a => a.Name)))});
+        try
+        {{
+            if (__DP_ARG___is_return == false) {(returnType != typeof(void) ? "__DP_ARG___return_value = " : "")}{(methodIsAsync ? "await " : "")}base.{method.Name}({(string.Join(", ", method.GetParameters().Select(a => a.Name)))});
+        }}
+        catch (Exception __DP_ARG___ex)
+        {{
+            __DP_ARG___exception = __DP_ARG___ex;
+        }}
         {getMatchedAttributesCode(returnType, DynamicProxyInjectorType.Method, methodIsAsync, attrsIndex, "After")}
-
-        return{(returnType != typeof(void) ? " __DP_ARG_source_return" : "")};
+        {getMatchedAttributesCodeReturn(returnType, DynamicProxyInjectorType.Method, methodIsAsync, null)}
     }}");
             }
             #endregion
@@ -198,15 +207,22 @@ namespace FreeSql
                     else sb.Append($@"
         get
         {{
-            {_argumentName} __DP_ARG = null;
-            {_idynamicProxyName} __DP_ARG___attribute = null;
-            var __DP_ARG__parameters = new Dictionary<string, object>();
+            Exception __DP_ARG___exception = null;
+            var __DP_ARG___is_return = false;
+            object __DP_ARG___return_value = null;
+            var __DP_ARG___parameters = new Dictionary<string, object>();
             {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertyGet, false, attrsIndex, "Before")}
 
-            var __DP_ARG_source_return = base.{prop2.Name};
+            try
+            {{
+                if (__DP_ARG___is_return == false) __DP_ARG___return_value = base.{prop2.Name};
+            }}
+            catch (Exception __DP_ARG___ex)
+            {{
+                __DP_ARG___exception = __DP_ARG___ex;
+            }}
             {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertyGet, false, attrsIndex, "After")}
-
-            return __DP_ARG_source_return;
+            {getMatchedAttributesCodeReturn(prop2.PropertyType, DynamicProxyInjectorType.Method, false, null)}
         }}");
                 }
 
@@ -220,15 +236,22 @@ namespace FreeSql
                     else sb.Append($@"
         set
         {{
-            {_argumentName} __DP_ARG = null;
-            {_idynamicProxyName} __DP_ARG___attribute = null;
-            var __DP_ARG__parameters = new Dictionary<string, object>();
-            __DP_ARG__parameters.Add(""value"", value);
-            {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertySet, false, attrsIndex, "Before").Replace("__base__property__value__", $"base.{prop2.Name}")}
+            Exception __DP_ARG___exception = null;
+            var __DP_ARG___is_return = false;
+            object __DP_ARG___return_value = null;
+            var __DP_ARG___parameters = new Dictionary<string, object>();
+            __DP_ARG___parameters.Add(""value"", value);
+            {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertySet, false, attrsIndex, "Before")}
 
-            base.{prop2.Name} = value;
-            var __DP_ARG_source_return = value;
-            {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertySet, false, attrsIndex, "After").Replace("__base__property__value__", $"base.{prop2.Name}")}
+            try
+            {{
+                if (__DP_ARG___is_return == false) base.{prop2.Name} = value;
+            }}
+            catch (Exception __DP_ARG___ex)
+            {{
+                __DP_ARG___exception = __DP_ARG___ex;
+            }}
+            {getMatchedAttributesCode(prop2.PropertyType, DynamicProxyInjectorType.PropertySet, false, attrsIndex, "After")}
         }}");
                 }
 
@@ -308,7 +331,7 @@ public class {className} : {typeCSharpName}
             }
             catch (Exception ex)
             {
-                throw new Exception($"{ex.Message} {cscode}", ex);
+                throw new DynamicProxyException($"FreeSql.DynamicProxy 失败提示：{ex.Message} {cscode}", ex);
             }
         }
         //static Assembly CompileCode(string cscode)
@@ -362,7 +385,7 @@ public class {className} : {typeCSharpName}
             var cr = compiler.CompileAssemblyFromSource(objCompilerParameters, cscode);
 
             if (cr.Errors.Count > 0)
-                throw new Exception($"{cr.Errors[0].ErrorText} {cscode}");
+                throw new DynamicProxyException($"FreeSql.DynamicProxy 失败提示：{cr.Errors[0].ErrorText} {cscode}", null);
 
             return cr.CompiledAssembly;
         }

@@ -18,45 +18,87 @@
             <param name="source"></param>
             <returns></returns>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.Sender">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.Sender">
             <summary>
             代理对象
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.InjectorType">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.InjectorType">
             <summary>
             生效的类型
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.MemberInfo">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.MemberInfo">
             <summary>
             方法或属性反射信息
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.Parameters">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.Parameters">
             <summary>
             方法或属性，执行时候的参数值
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.Attribute">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.Attribute">
             <summary>
             生效的特性
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.IsReturn">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.IsReturn">
             <summary>
             是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.ReturnValue">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.ReturnValue">
             <summary>
             拦截自定义返回值<para></para>
             如果方法返回类型为 void，设置 null 即可
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyArguments.AfterBag">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.AfterBag">
             <summary>
             Before/After 共用包
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.Sender">
+            <summary>
+            代理对象
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.InjectorType">
+            <summary>
+            生效的类型
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.MemberInfo">
+            <summary>
+            方法或属性反射信息
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.Parameters">
+            <summary>
+            方法或属性，执行时候的参数值
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.Attribute">
+            <summary>
+            生效的特性
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.BeforeBag">
+            <summary>
+            Before/After 共用包
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.Exception">
+            <summary>
+            发生的错误
+            </summary>
+        </member>
+        <member name="P:FreeSql.DynamicProxyAfterArguments.ExceptionHandled">
+            <summary>
+            发生异常时，是否处理异常<para></para>
+            false: 抛出异常 (默认)
+            true: 不抛出异常 (继续执行)
             </summary>
         </member>
         <member name="F:FreeSql.DynamicProxyInjectorType.Method">
@@ -79,14 +121,14 @@
             实现该特性，标记的方法/属性支持动态代理
             </summary>
         </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxyArguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxyBeforeArguments)">
             <summary>
             方法执行之前
             </summary>
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyArguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyAfterArguments)">
             <summary>
             方法执行之前
             </summary>
