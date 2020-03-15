@@ -29,7 +29,7 @@ public class MyClass
     public virtual string Text
     {
         [Cache(Key = "Text")]
-        get;
+        get; 
         set;
     }
 }
@@ -70,14 +70,14 @@ class Program
     {
         FreeSql.DynamicProxy.Test(typeof(MyClass)); //The first dynamic compilation was slow
 
-        DateTime dt = DateTime.Now;
+        var dt = DateTime.Now;
         var pxy = FreeSql.DynamicProxy.CreateInstanse<MyClass>();
         Console.WriteLine(pxy.Get());
         Console.WriteLine(pxy.GetAsync().Result);
         pxy.Text = "testSetProp1";
         Console.WriteLine(pxy.Text);
 
-        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms");
+        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
 
         dt = DateTime.Now;
         pxy = FreeSql.DynamicProxy.CreateInstanse<MyClass>();
@@ -97,10 +97,10 @@ Console output:
 Before Get NewValue
 BeforeAsync GetAsync NewValue
 Before Text NewValue
-86.2115 ms
+30.8417 ms
 
 Before Get NewValue
 BeforeAsync GetAsync NewValue
 Before Text NewValue
-0.4034 ms
+0.3338 ms
 ```

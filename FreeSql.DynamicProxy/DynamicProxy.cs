@@ -6,10 +6,6 @@ using System.Reflection;
 using System.Text;
 using System.IO;
 
-#if netstandard
-using Natasha;
-#endif
-
 namespace FreeSql
 {
     /// <summary>
@@ -40,6 +36,19 @@ namespace FreeSql
             if (meta == null) return null;
             object source = meta.CreateSourceInstance(parameters);
             return Activator.CreateInstance(meta.ProxyType, new object[] { source, meta });
+        }
+
+        /// <summary>
+        /// 创建 对象 source 的 FreeSql.DynamicProxy 代理对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static T CreateInstance<T>(T source) where T : class
+        {
+            var meta = _metaCache.GetOrAdd(source.GetType(), tp => Test(tp));
+            if (meta == null) return null;
+            return Activator.CreateInstance(meta.ProxyType, new object[] { source, meta }) as T;
         }
 
         static readonly string _metaName = typeof(Meta).CSharpFullName();
@@ -260,7 +269,7 @@ public class {className} : {typeCSharpName}
 
         static Assembly CompileCode(string cscode)
         {
-            AssemblyComplier complier = new AssemblyComplier();
+            Natasha.AssemblyComplier complier = new Natasha.AssemblyComplier();
             //complier.Domain = DomainManagment.Random;
             complier.Add(cscode);
             return complier.GetAssembly();

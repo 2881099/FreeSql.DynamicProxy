@@ -20,7 +20,7 @@ public class MyClass
     public virtual string Text
     {
         [Cache(Key = "Text")]
-        get;
+        get; 
         set;
     }
 }
@@ -68,7 +68,7 @@ class Program
         pxy.Text = "testSetProp1";
         Console.WriteLine(pxy.Text);
 
-        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms");
+        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
 
         dt = DateTime.Now;
         pxy = FreeSql.DynamicProxy.CreateInstanse<MyClass>();
