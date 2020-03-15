@@ -7,6 +7,7 @@ The dynamic proxy integration enables method calls on The .NetCore or .NetFramew
 > Install-Package FreeSql.DynamicProxy
 
 ```csharp
+using FreeSql;
 using System;
 using System.Threading.Tasks;
 
@@ -32,6 +33,8 @@ public class MyClass
         get; 
         set;
     }
+
+    public string T2 { get; set; }
 }
 
 class CacheAttribute : FreeSql.DynamicProxyAttribute
@@ -40,38 +43,28 @@ class CacheAttribute : FreeSql.DynamicProxyAttribute
 
     public override void Before(FreeSql.DynamicProxyArguments args)
     {
-        if (args.MemberInfo.Name == "Get")
-        {
-            args.ReturnValue = "Before Get NewValue";
-        }
-        if (args.MemberInfo.Name == "Text")
-        {
-            args.ReturnValue = "Before Text NewValue";
-        }
+        args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
     }
     public override void After(FreeSql.DynamicProxyArguments args)
     {
     }
 
-    //Intercept asynchronous methods
-    public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
-    {
-        if (args.MemberInfo.Name == "GetAsync")
-        {
-            args.ReturnValue = "BeforeAsync GetAsync NewValue";
-        }
-        return Task.CompletedTask;
-    }
+    //Intercept asynchronous methods, Comment code will execute synchronization method
+    //public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
+    //{
+    //    args.ReturnValue = string.Concat(args.ReturnValue, " BeforeAsync Changed");
+    //    return Task.CompletedTask;
+    //}
 }
 
 class Program
 {
     static void Main(string[] args)
     {
-        FreeSql.DynamicProxy.Test(typeof(MyClass)); //The first dynamic compilation was slow
+        FreeSql.DynamicProxy.GetAvailableMeta(typeof(MyClass)); //The first dynamic compilation was slow
 
-        var dt = DateTime.Now;
-        var pxy = FreeSql.DynamicProxy.CreateInstanse<MyClass>();
+        DateTime dt = DateTime.Now;
+        var pxy = new MyClass { T2 = "123123" }.ToDynamicProxy();
         Console.WriteLine(pxy.Get());
         Console.WriteLine(pxy.GetAsync().Result);
         pxy.Text = "testSetProp1";
@@ -80,7 +73,7 @@ class Program
         Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
 
         dt = DateTime.Now;
-        pxy = FreeSql.DynamicProxy.CreateInstanse<MyClass>();
+        pxy = new MyClass().ToDynamicProxy();
         Console.WriteLine(pxy.Get());
         Console.WriteLine(pxy.GetAsync().Result);
         pxy.Text = "testSetProp2";

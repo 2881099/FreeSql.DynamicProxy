@@ -9,39 +9,18 @@
             DynamicProxy 快速使用类
             </summary>
         </member>
-        <member name="M:FreeSql.DynamicProxy.CreateInstanse``1">
+        <member name="M:FreeSql.DynamicProxy.ToDynamicProxy``1(``0)">
             <summary>
-            创建 FreeSql.DynamicProxy 代理对象
+            创建 对象 source 的 FreeSql.DynamicProxy 代理对象<para></para>
+            有可能返回 source 本身（当不需要动态代理的时候）
             </summary>
             <typeparam name="T"></typeparam>
+            <param name="source"></param>
             <returns></returns>
-        </member>
-        <member name="M:FreeSql.DynamicProxy.CreateInstanse(System.Type,System.Object[])">
-            <summary>
-            创建 FreeSql.DynamicProxy 代理对象
-            </summary>
-            <param name="type"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="F:FreeSql.DynamicProxy.InjectorType.Method">
-            <summary>
-            方法代理
-            </summary>
-        </member>
-        <member name="F:FreeSql.DynamicProxy.InjectorType.PropertyGet">
-            <summary>
-            属性Get代理
-            </summary>
-        </member>
-        <member name="F:FreeSql.DynamicProxy.InjectorType.PropertySet">
-            <summary>
-            属性Set代理
-            </summary>
         </member>
         <member name="P:FreeSql.DynamicProxyArguments.Sender">
             <summary>
-            真实目标实例
+            代理对象
             </summary>
         </member>
         <member name="P:FreeSql.DynamicProxyArguments.InjectorType">
@@ -80,6 +59,21 @@
             Before/After 共用包
             </summary>
         </member>
+        <member name="F:FreeSql.DynamicProxyInjectorType.Method">
+            <summary>
+            方法代理
+            </summary>
+        </member>
+        <member name="F:FreeSql.DynamicProxyInjectorType.PropertyGet">
+            <summary>
+            属性Get代理
+            </summary>
+        </member>
+        <member name="F:FreeSql.DynamicProxyInjectorType.PropertySet">
+            <summary>
+            属性Set代理
+            </summary>
+        </member>
         <member name="T:FreeSql.DynamicProxyAttribute">
             <summary>
             实现该特性，标记的方法/属性支持动态代理
@@ -111,7 +105,7 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:FreeSql.InternalExtensions.CSharpFullName(System.Type)">
+        <member name="M:FreeSql.DynamicProxyExtensions.CSharpFullName(System.Type)">
             <summary>
             获取 Type 的原始 c# 文本表示
             </summary>

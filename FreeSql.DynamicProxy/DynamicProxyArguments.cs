@@ -9,13 +9,13 @@ namespace FreeSql
     {
 
         /// <summary>
-        /// 真实目标实例
+        /// 代理对象
         /// </summary>
         public object Sender { get; }
         /// <summary>
         /// 生效的类型
         /// </summary>
-        public DynamicProxy.InjectorType InjectorType { get; }
+        public DynamicProxyInjectorType InjectorType { get; }
         /// <summary>
         /// 方法或属性反射信息
         /// </summary>
@@ -54,7 +54,7 @@ namespace FreeSql
         /// </summary>
         public Dictionary<string, object> AfterBag { get; }
 
-        public DynamicProxyArguments(object sender, DynamicProxy.InjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, DynamicProxyAttribute attribute, object returnValue, Dictionary<string, object> bag)
+        public DynamicProxyArguments(object sender, DynamicProxyInjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, DynamicProxyAttribute attribute, object returnValue, Dictionary<string, object> bag)
         {
             this.Sender = sender;
             this.InjectorType = injectorType;
@@ -66,22 +66,20 @@ namespace FreeSql
         }
     }
 
-    partial class DynamicProxy
+    public enum DynamicProxyInjectorType
     {
-        public enum InjectorType
-        {
-            /// <summary>
-            /// 方法代理
-            /// </summary>
-            Method,
-            /// <summary>
-            /// 属性Get代理
-            /// </summary>
-            PropertyGet,
-            /// <summary>
-            /// 属性Set代理
-            /// </summary>
-            PropertySet
-        }
+        /// <summary>
+        /// 方法代理
+        /// </summary>
+        Method,
+        /// <summary>
+        /// 属性Get代理
+        /// </summary>
+        PropertyGet,
+        /// <summary>
+        /// 属性Set代理
+        /// </summary>
+        PropertySet
     }
-    }
+
+}

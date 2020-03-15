@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FreeSql
 {
-    static class InternalExtensions
+    static class DynamicProxyExtensions
     {
 
         /// <summary>
@@ -42,7 +42,15 @@ namespace FreeSql
         {
             if (that == typeof(void)) return false;
             if (that == typeof(Task)) return true;
+#if ns21
+            if (that == typeof(ValueTask)) return true;
+#endif
+
+#if ns20 || ns21
+            if (that.IsGenericType && that.Namespace == "System.Threading.Tasks" && (that.Name == typeof(Task<object>).Name || that.Name == typeof(ValueTask<object>).Name)) return true;
+#else
             if (that.IsGenericType && that.Namespace == "System.Threading.Tasks" && that.Name == typeof(Task<object>).Name) return true;
+#endif
             return false;
         }
 
