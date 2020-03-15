@@ -1,13 +1,34 @@
 The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+, Support asynchronous method and property interception.
 
-## Quick start
+## Install
 
 > dotnet add package FreeSql.DynamicProxy
 
 > Install-Package FreeSql.DynamicProxy
 
+## AspNetCore
+
 ```csharp
-using FreeSql;
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateHostBuilder(args).Build().Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            })
+            .UseServiceProviderFactory(new FreeSql.DynamicProxyServiceProviderFactory());
+}
+```
+
+## Console
+
+```csharp
 using System;
 using System.Threading.Tasks;
 
@@ -33,8 +54,6 @@ public class MyClass
         get; 
         set;
     }
-
-    public string T2 { get; set; }
 }
 
 class CacheAttribute : FreeSql.DynamicProxyAttribute

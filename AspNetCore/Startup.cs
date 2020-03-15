@@ -55,7 +55,7 @@ namespace AspNetCore
         }
 
         [Cache(Key = "GetAsync")]
-        async public virtual Task<string> GetAsync()
+        async public virtual Task<string> GetAsync(string id, MyClass2 cls2333, DateTime now)
         {
             await Task.Yield();
             return "MyClass1.GetAsync value";

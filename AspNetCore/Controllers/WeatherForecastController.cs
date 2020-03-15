@@ -51,7 +51,7 @@ namespace AspNetCore.Controllers
         {
             var sb = new StringBuilder();
             var dt = DateTime.Now;
-            sb.AppendLine(await cls1.GetAsync());
+            sb.AppendLine(await cls1.GetAsync("id1", cls2, DateTime.Now));
             cls1.Text = "testSetProp1";
             sb.AppendLine(cls1.Text);
             sb.AppendLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
@@ -63,7 +63,7 @@ namespace AspNetCore.Controllers
             sb.AppendLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
 
             dt = DateTime.Now;
-            sb.AppendLine(cls11.GetAsync().Result);
+            sb.AppendLine(await cls11.GetAsync("id22", cls2, DateTime.Now));
             cls11.Text = "testSetProp3";
             sb.AppendLine(cls11.Text);
             sb.AppendLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
