@@ -81,26 +81,14 @@
         </member>
         <member name="M:FreeSql.DynamicProxyAttribute.Before(FreeSql.DynamicProxyArguments)">
             <summary>
-            同步方法执行之前
-            </summary>
-            <param name="args"></param>
-        </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyArguments)">
-            <summary>
-            同步方法执行之后
-            </summary>
-            <param name="args"></param>
-        </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.BeforeAsync(FreeSql.DynamicProxyArguments)">
-            <summary>
-            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            方法执行之前
             </summary>
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:FreeSql.DynamicProxyAttribute.AfterAsync(FreeSql.DynamicProxyArguments)">
+        <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyArguments)">
             <summary>
-            异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+            方法执行之前
             </summary>
             <param name="args"></param>
             <returns></returns>

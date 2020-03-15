@@ -60,7 +60,7 @@ namespace FreeSql
         public object CreateProxyInstance(object source)
         {
             if (this.ProxyType == null) return source;
-            var proxy = Activator.CreateInstance(this.ProxyType, new object[] { this });
+            var proxy = this.ProxyType.CreateInstanceGetDefaultValue();
 
             // copy data
             _copyDataFunc.GetOrAdd(this.ProxyType, _ =>

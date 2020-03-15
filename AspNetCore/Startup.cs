@@ -99,20 +99,14 @@ namespace AspNetCore
     {
         public string Key { get; set; }
 
-        public override void Before(FreeSql.DynamicProxyArguments args)
+        public override Task Before(FreeSql.DynamicProxyArguments args)
         {
             args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
+            return base.Before(args);
         }
-        public override void After(FreeSql.DynamicProxyArguments args)
+        public override Task After(FreeSql.DynamicProxyArguments args)
         {
-            ;
-        }
-
-        //Intercept asynchronous methods, Comment code will execute synchronization method
-        public override Task BeforeAsync(FreeSql.DynamicProxyArguments args)
-        {
-            args.ReturnValue = string.Concat(args.ReturnValue, " BeforeAsync Changed");
-            return Task.CompletedTask;
+            return base.After(args);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace FreeSql
         //{proxyMethodName}{a}{(proxyMethodName == "Before" ? $"\r\n      var __DP_ARG___bag{a} = new Dictionary<string, object>()" : "")};
         __DP_ARG = new {_argumentName}(this, {_injectorTypeName}.{injectorType.ToString()}, __DP_Meta.MatchedMemberInfos[{a}], __DP_ARG__parameters, __DP_Meta.MatchedAttributes[{a}], {(returnType == typeof(void) || proxyMethodName == "Before" ? "null" : "__DP_ARG_source_return")}, __DP_ARG___bag{a});
         __DP_ARG___attribute = __DP_Meta.MatchedAttributes[{a}];
-        {(isAsync ? "await " : "")}__DP_ARG___attribute.{proxyMethodName}{(isAsync ? "Async" : "")}(__DP_ARG);");
+        {(isAsync ? "await " : "")}__DP_ARG___attribute.{proxyMethodName}(__DP_ARG);");
 
                     if (injectorType == DynamicProxyInjectorType.PropertySet)
                         sbt.Append($@"
@@ -111,17 +111,18 @@ namespace FreeSql
                         null, className, null, null);
                 }
 
+#if net40
                 var returnType = method.ReturnType;
                 var methodIsAsync = false;
-#if net40
-                
 #else
-                if (attrs.Where(a => a.GetType().GetMethod("BeforeAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any() ||
-                    attrs.Where(a => a.GetType().GetMethod("AfterAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any())
-                {
-                    returnType = method.ReturnType.ReturnTypeWithoutTask();
-                    methodIsAsync = method.ReturnType.IsTask();
-                }
+                var returnType = method.ReturnType.ReturnTypeWithoutTask();
+                var methodIsAsync = method.ReturnType.IsTask();
+
+                //if (attrs.Where(a => a.GetType().GetMethod("BeforeAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any() ||
+                //    attrs.Where(a => a.GetType().GetMethod("AfterAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any())
+                //{
+                    
+                //}
 #endif
 
                 sb.Append($@"
@@ -252,7 +253,6 @@ namespace FreeSql
     {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctor.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
         : base({(string.Join(", ", ctor.GetParameters().Select(a => a.Name)))})
     {{
-        __DP_Meta = {typeof(DynamicProxy).CSharpFullName()}.{nameof(GetAvailableMeta)}(typeof({typeCSharpName}));
     }}");
                 }
                 #endregion
@@ -264,12 +264,13 @@ using System.Text;
 
 public class {className} : {typeCSharpName}
 {{
-    private {_metaName} __DP_Meta;
+    private {_metaName} __DP_Meta = {typeof(DynamicProxy).CSharpFullName()}.{nameof(GetAvailableMeta)}(typeof({typeCSharpName}));
 
-    public {className}({_metaName} meta)
-    {{
-        __DP_Meta = meta;
-    }}
+    //这里要注释掉，如果重写的基类没有无参构造函数，会报错
+    //public {className}({_metaName} meta)
+    //{{
+    //    __DP_Meta = meta;
+    //}}
     {sb.ToString()}
     {methodOverrideSb.ToString()}
 

@@ -11,33 +11,31 @@ namespace FreeSql
     public abstract class DynamicProxyAttribute : Attribute
     {
 
+#if net40
         /// <summary>
-        /// 同步方法执行之前
+        /// 方法执行之前
         /// </summary>
         /// <param name="args"></param>
         public virtual void Before(DynamicProxyArguments args) { }
 
         /// <summary>
-        /// 同步方法执行之后
+        /// 方法执行之后
         /// </summary>
         /// <param name="args"></param>
         public virtual void After(DynamicProxyArguments args) { }
-
-
-#if net40
 #else
         /// <summary>
-        /// 异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+        /// 方法执行之前
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task BeforeAsync(DynamicProxyArguments args) => Task.FromResult(false);
+        public virtual Task Before(DynamicProxyArguments args) => Task.FromResult(false);
         /// <summary>
-        /// 异步方法执行之前，处理返回值为 Task/Task&lt;T&gt; 的异步方法
+        /// 方法执行之前
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task AfterAsync(DynamicProxyArguments args) => Task.FromResult(false);
+        public virtual Task After(DynamicProxyArguments args) => Task.FromResult(false);
 #endif
 
     }
