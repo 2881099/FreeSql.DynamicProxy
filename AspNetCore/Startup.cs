@@ -25,8 +25,7 @@ namespace AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddScoped<MyClass1>();
-            services.AddScoped<MyClass2>();
+            services.AddScoped<CustomRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -45,69 +44,46 @@ namespace AspNetCore
         }
     }
 
-    public class MyClass1
+    public class CustomRepository
     {
-        [Cache(Key = "Get")]
-        public virtual string Get()
+
+        [Custom]
+        public virtual string Get(string key)
         {
-            return "MyClass1.Get value";
+            return $"CustomRepository.Get({key}) value";
         }
 
-        [Cache(Key = "GetAsync")]
-        async public virtual Task<string> GetAsync(string id, MyClass2 cls2333, DateTime now)
+        [Custom]
+        async public virtual Task<string> GetAsync(string key)
         {
             await Task.Yield();
-            return "MyClass1.GetAsync value";
+            return $"CustomRepository.GetAsync({key}) value";
         }
 
         public virtual string Text
         {
-            [Cache(Key = "Text")]
+            [Custom]
             get;
             set;
         }
-
-        public string T2 { get; set; }
-    }
-    public class MyClass2
-    {
-        [Cache(Key = "Get")]
-        public virtual string Get()
-        {
-            return "MyClass2.Get value";
-        }
-
-        [Cache(Key = "GetAsync")]
-        async public virtual Task<string> GetAsync()
-        {
-            await Task.Yield();
-            return "MyClass2.GetAsync value";
-        }
-
-        public virtual string Text
-        {
-            [Cache(Key = "Text")]
-            get;
-            set;
-        }
-
-        public string T2 { get; set; }
     }
 
-    class CacheAttribute : FreeSql.DynamicProxyAttribute
+    class CustomAttribute : FreeSql.DynamicProxyAttribute
     {
-        public string Key { get; set; }
-
+        //Inversion of control
         [FreeSql.DynamicProxyFromServices]
-        public IServiceProvider sp;
+        IServiceProvider _service;
 
         public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
         {
-            args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
+            Console.WriteLine($"{args.MemberInfo.Name} Before");
+            //args.Parameters["key"] = "NewKey";
+            //args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
             return base.Before(args);
         }
         public override Task After(FreeSql.DynamicProxyAfterArguments args)
         {
+            Console.WriteLine($"{args.MemberInfo.Name} After");
             return base.After(args);
         }
     }

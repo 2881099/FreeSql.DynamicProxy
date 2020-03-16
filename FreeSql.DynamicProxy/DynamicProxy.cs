@@ -301,12 +301,13 @@ namespace FreeSql
     private {serviceType.Key.CSharpFullName()} {serviceType.Value};")));
                 foreach (var ctor in ctors)
                 {
+                    var ctorParams = ctor.GetParameters();
                     sb.Append($@"
 
-    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctor.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))}{
-                        (fromServicesTypes.Any() ? "" : ", ")}{
+    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctorParams.Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))}{
+                        (ctorParams.Any() && fromServicesTypes.Any() ? ", " : "")}{
                         string.Join(", ", fromServicesTypes.Select(serviceType => $@"{serviceType.Key.CSharpFullName()} parameter{serviceType.Value}"))})
-        : base({(string.Join(", ", ctor.GetParameters().Select(a => a.Name)))})
+        : base({(string.Join(", ", ctorParams.Select(a => a.Name)))})
     {{{string.Join("", fromServicesTypes.Select(serviceType => $@"
         {serviceType.Value} = parameter{serviceType.Value};"))}
     }}");
