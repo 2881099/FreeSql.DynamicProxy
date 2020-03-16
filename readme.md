@@ -6,13 +6,11 @@ The dynamic proxy integration enables method calls on The .NetCore or .NetFramew
 - Support multiple intercepts
 - Support for dependency injection and inversion of control
 
-## Step 1: Install
-
 > dotnet add package FreeSql.DynamicProxy
 
 > Install-Package FreeSql.DynamicProxy
 
-## Step 2: Defining Attributes
+## Defining Attributes
 
 ```csharp
 class CustomAttribute : FreeSql.DynamicProxyAttribute
@@ -36,7 +34,7 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 }
 ```
 
-## Step 3: Interceptor method
+## Interceptor method
 
 ```csharp
 public class CustomRepository
@@ -63,7 +61,7 @@ public class CustomRepository
 }
 ```
 
-## Step 4: Testing in AspNetCore
+## Testing in AspNetCore
 
 1. Use ServiceProviderFactory
 
