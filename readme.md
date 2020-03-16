@@ -150,8 +150,10 @@ Invalid value
 | Sender | Object | Proxy Object |
 | InjectorType | Enum | Method, PropertyGet, PropertySet |
 | MemberInfo | MemberInfo | Reflection information |
-| Parameters | Dictionary\<string, object\> | Method execution parameters, Parameters: Values can be modified (Intercept) |
+| Parameters | Dictionary\<string, object\> | Method execution parameters |
 | ReturnValue | Object | Intercept the original method and set the return value |
+
+> Parameters: Values can be modified (Intercept)
 
 2. After Arguments
 
@@ -163,4 +165,6 @@ Invalid value
 | Parameters | Dictionary\<string, object\> | Method execution parameters |
 | ReturnValue | Object | Return value of method |
 | Exception | Exception | Exception information of original method execution |
-| ExceptionHandled | bool | Handle exceptions when exceptions occur, False: throw exception (default), True: ignore exception (continue) |
+| ExceptionHandled | bool | Handle exceptions when exceptions occur |
+
+> ExceptionHandled: False: throw exception (default), True: ignore exception (continue)
