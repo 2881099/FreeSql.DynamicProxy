@@ -36,7 +36,7 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 }
 ```
 
-1、Before Arguments
+1. Before Arguments
 
 | Property | Type | Notes |
 | -- | -- | -- |
@@ -46,7 +46,7 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 | Parameters | Dictionary\<string, object\> | Method execution parameters, Parameters: Values can be modified (Intercept) |
 | ReturnValue | Object | Intercept the original method and set the return value |
 
-2、After Arguments
+2. After Arguments
 
 | Property | Type | Notes |
 | -- | -- | -- |
@@ -89,7 +89,7 @@ public class CustomRepository
 ## Step 4: Testing in AspNetCore
 
 
-1、Use ServiceProviderFactory
+1. Use ServiceProviderFactory
 
 ```csharp
 public class Program
@@ -109,7 +109,7 @@ public class Program
 }
 ```
 
-2、Add Dependency injection
+2. Add Dependency injection
 
 ```csharp
     public void ConfigureServices(IServiceCollection services)
@@ -119,7 +119,7 @@ public class Program
     }
 ```
 
-3、Create Controller
+3. Create Controller
 
 ```csharp
 public class ValuesController : ControllerBase
@@ -145,7 +145,7 @@ public class ValuesController : ControllerBase
 }
 ```
 
-4、Console Output
+4. Console Output
 
 ```shell
 Get Before
