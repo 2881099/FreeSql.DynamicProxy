@@ -36,28 +36,6 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 }
 ```
 
-1. Before Arguments
-
-| Property | Type | Notes |
-| -- | -- | -- |
-| Sender | Object | Proxy Object |
-| InjectorType | Enum | Method, PropertyGet, PropertySet |
-| MemberInfo | MemberInfo | Reflection information |
-| Parameters | Dictionary\<string, object\> | Method execution parameters, Parameters: Values can be modified (Intercept) |
-| ReturnValue | Object | Intercept the original method and set the return value |
-
-2. After Arguments
-
-| Property | Type | Notes |
-| -- | -- | -- |
-| Sender | Object | Proxy Object |
-| InjectorType | Enum | Method, PropertyGet, PropertySet |
-| MemberInfo | MemberInfo | Reflection information |
-| Parameters | Dictionary\<string, object\> | Method execution parameters |
-| ReturnValue | Object | Return value of method |
-| Exception | Exception | Exception information of original method execution |
-| ExceptionHandled | bool | Handle exceptions when exceptions occur, False: throw exception (default), True: ignore exception (continue) |
-
 ## Step 3: Interceptor method
 
 ```csharp
@@ -162,3 +140,27 @@ Text Before
 Text After
 Invalid value
 ```
+
+## Arguments
+
+1. Before Arguments
+
+| Property | Type | Notes |
+| -- | -- | -- |
+| Sender | Object | Proxy Object |
+| InjectorType | Enum | Method, PropertyGet, PropertySet |
+| MemberInfo | MemberInfo | Reflection information |
+| Parameters | Dictionary\<string, object\> | Method execution parameters, Parameters: Values can be modified (Intercept) |
+| ReturnValue | Object | Intercept the original method and set the return value |
+
+2. After Arguments
+
+| Property | Type | Notes |
+| -- | -- | -- |
+| Sender | Object | Proxy Object |
+| InjectorType | Enum | Method, PropertyGet, PropertySet |
+| MemberInfo | MemberInfo | Reflection information |
+| Parameters | Dictionary\<string, object\> | Method execution parameters |
+| ReturnValue | Object | Return value of method |
+| Exception | Exception | Exception information of original method execution |
+| ExceptionHandled | bool | Handle exceptions when exceptions occur, False: throw exception (default), True: ignore exception (continue) |
