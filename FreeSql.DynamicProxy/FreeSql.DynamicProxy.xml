@@ -38,12 +38,7 @@
             方法或属性，执行时候的参数值
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyBeforeArguments.Attribute">
-            <summary>
-            生效的特性
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxyBeforeArguments.IsReturn">
+        <member name="P:FreeSql.DynamicProxyBeforeArguments.Returned">
             <summary>
             是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
             </summary>
@@ -52,11 +47,6 @@
             <summary>
             拦截自定义返回值<para></para>
             如果方法返回类型为 void，设置 null 即可
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxyBeforeArguments.AfterBag">
-            <summary>
-            Before/After 共用包
             </summary>
         </member>
         <member name="P:FreeSql.DynamicProxyAfterArguments.Sender">
@@ -79,14 +69,9 @@
             方法或属性，执行时候的参数值
             </summary>
         </member>
-        <member name="P:FreeSql.DynamicProxyAfterArguments.Attribute">
+        <member name="P:FreeSql.DynamicProxyAfterArguments.ReturnValue">
             <summary>
-            生效的特性
-            </summary>
-        </member>
-        <member name="P:FreeSql.DynamicProxyAfterArguments.BeforeBag">
-            <summary>
-            Before/After 共用包
+            方法的返回值
             </summary>
         </member>
         <member name="P:FreeSql.DynamicProxyAfterArguments.Exception">
@@ -98,7 +83,7 @@
             <summary>
             发生异常时，是否处理异常<para></para>
             false: 抛出异常 (默认)
-            true: 不抛出异常 (继续执行)
+            true: 忽略异常 (继续执行)
             </summary>
         </member>
         <member name="F:FreeSql.DynamicProxyInjectorType.Method">

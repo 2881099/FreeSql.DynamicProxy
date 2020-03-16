@@ -16,6 +16,7 @@ namespace FreeSql
 
         public MemberInfo[] MatchedMemberInfos { get; }
         public DynamicProxyAttribute[] MatchedAttributes { get; }
+        private Type[] _matchedAttributesTypes;
 
         public string ProxyCSharpCode { get; }
         public string ProxyClassName { get; }
@@ -36,6 +37,7 @@ namespace FreeSql
 
             this.MatchedMemberInfos = matchedMemberInfos;
             this.MatchedAttributes = matchedAttributes;
+            _matchedAttributesTypes = matchedAttributes?.Select(a => a?.GetType()).ToArray();
 
             this.ProxyCSharpCode = proxyCSharpCode;
             this.ProxyClassName = proxyClassName;
@@ -55,45 +57,86 @@ namespace FreeSql
             return Activator.CreateInstance(this.SourceType, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, parameters);
         }
 
-        readonly static ConcurrentDictionary<Type, Action<object, object>> _copyDataFunc = new ConcurrentDictionary<Type, Action<object, object>>();
-        readonly static Action<object, object> _copyDataFuncEmpty = new Action<object, object>((item1, item2) => { });
         public object CreateProxyInstance(object source)
         {
             if (this.ProxyType == null) return source;
-            var proxy = this.ProxyType.CreateInstanceGetDefaultValue();
+            var proxy = CreateInstanceDefault(this.ProxyType);
+            CopyData(this.SourceType, source, proxy);
+            return proxy;
+        }
 
-            // copy data
-            _copyDataFunc.GetOrAdd(this.ProxyType, _ =>
+        public DynamicProxyAttribute CreateDynamicProxyAttribute(int index)
+        {
+            if (index < 0 || index > this.MatchedAttributes.Length) 
+                throw new ArgumentException($"{nameof(index)} 参数错误，值范围 0 至 {this.MatchedAttributes.Length}");
+            var attribute = CreateInstanceDefault(_matchedAttributesTypes[index]) as DynamicProxyAttribute;
+            CopyData(_matchedAttributesTypes[index], this.MatchedAttributes[index], attribute);
+            return attribute;
+        }
+        public void SetDynamicProxyAttributePropertyValue(int index, object source, string propertyOrField, object value)
+        {
+            if (source == null) return;
+            if (index < 0 || index > this.MatchedAttributes.Length)
+                throw new ArgumentException($"{nameof(index)} 参数错误，值范围 0 至 {this.MatchedAttributes.Length}");
+            SetPropertyValue(_matchedAttributesTypes[index], source, propertyOrField, value);
+        }
+
+
+        public static object CreateInstanceDefault(Type type)
+        {
+            if (type == null) return null;
+            if (type == typeof(string)) return default(string);
+            if (type.IsArray) return Array.CreateInstance(type, 0);
+            var ctorParms = InternalGetTypeConstructor0OrFirst(type, true)?.GetParameters();
+            if (ctorParms == null || ctorParms.Any() == false) return Activator.CreateInstance(type, null);
+            return Activator.CreateInstance(type, ctorParms.Select(a => a.ParameterType.IsInterface || a.ParameterType.IsAbstract ? null : Activator.CreateInstance(a.ParameterType, null)).ToArray());
+        }
+        internal static NewExpression InternalNewExpression(Type that)
+        {
+            var ctor = InternalGetTypeConstructor0OrFirst(that);
+            return Expression.New(ctor, ctor.GetParameters().Select(a => Expression.Constant(CreateInstanceDefault(a.ParameterType), a.ParameterType)));
+        }
+
+        static ConcurrentDictionary<Type, ConstructorInfo> _dicInternalGetTypeConstructor0OrFirst = new ConcurrentDictionary<Type, ConstructorInfo>();
+        internal static ConstructorInfo InternalGetTypeConstructor0OrFirst(Type that, bool isThrow = true)
+        {
+            var ret = _dicInternalGetTypeConstructor0OrFirst.GetOrAdd(that, tp =>
+                tp.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[0], null) ??
+                tp.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault());
+            if (ret == null && isThrow) throw new ArgumentException($"{that.FullName} 类型无方法访问构造函数");
+            return ret;
+        }
+
+        readonly static ConcurrentDictionary<Type, Action<object, object>> _copyDataFunc = new ConcurrentDictionary<Type, Action<object, object>>();
+        readonly static Action<object, object> _copyDataFuncEmpty = new Action<object, object>((item1, item2) => { });
+        public static void CopyData(Type sourceType, object source, object target)
+        {
+            if (source == null) return;
+            if (target == null) return;
+            _copyDataFunc.GetOrAdd(sourceType, type =>
             {
                 var sourceParamExp = Expression.Parameter(typeof(object), "sourceObject");
-                var proxyParamExp = Expression.Parameter(typeof(object), "proxyObject");
-                var sourceExp = Expression.Variable(this.SourceType, "source");
-                var proxyExp = Expression.Variable(this.ProxyType, "proxy");
+                var targetParamExp = Expression.Parameter(typeof(object), "targetObject");
+                var sourceExp = Expression.Variable(type, "source");
+                var targetExp = Expression.Variable(type, "target");
                 var copyExps = new List<Expression>();
-                //Expression.IfThen(Expression.Equal(sourceExp, Expression.Constant(null)),
-                var sourceFields = this.SourceType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                //var proxyFields = this.ProxyType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                foreach (var sourceField in sourceFields)
-                {
-                    //var proxyField = proxyFields.Where(a => a.FieldType == sourceField.FieldType && a.Name == sourceField.Name).FirstOrDefault();
-                    //if (proxyField == null) continue;
-                    var proxyField = sourceField;
+                var sourceFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var field in sourceFields)
+                    copyExps.Add(Expression.Assign(Expression.MakeMemberAccess(targetExp, field), Expression.MakeMemberAccess(sourceExp, field)));
 
-                    copyExps.Add(Expression.Assign(Expression.MakeMemberAccess(proxyExp, proxyField), Expression.MakeMemberAccess(sourceExp, sourceField)));
-                }
                 if (copyExps.Any() == false) return _copyDataFuncEmpty;
                 var bodyExp = Expression.Block(
                     new[] {
-                            sourceExp, proxyExp
+                            sourceExp, targetExp
                     },
                     new[] {
                             Expression.IfThen(
                                 Expression.NotEqual(sourceParamExp, Expression.Constant(null)),
                                 Expression.IfThen(
-                                    Expression.NotEqual(proxyParamExp, Expression.Constant(null)),
+                                    Expression.NotEqual(targetParamExp, Expression.Constant(null)),
                                     Expression.Block(
-                                        Expression.Assign(sourceExp, Expression.TypeAs(sourceParamExp, this.SourceType)),
-                                        Expression.Assign(proxyExp, Expression.TypeAs(proxyParamExp, this.ProxyType)),
+                                        Expression.Assign(sourceExp, Expression.TypeAs(sourceParamExp, sourceType)),
+                                        Expression.Assign(targetExp, Expression.TypeAs(targetParamExp, sourceType)),
                                         Expression.IfThen(
                                             Expression.NotEqual(sourceExp, Expression.Constant(null)),
                                             Expression.IfThen(
@@ -108,10 +151,41 @@ namespace FreeSql
                             )
                     }
                 );
-                return Expression.Lambda<Action<object, object>>(bodyExp, sourceParamExp, proxyParamExp).Compile();
-            })(source, proxy);
+                return Expression.Lambda<Action<object, object>>(bodyExp, sourceParamExp, targetParamExp).Compile();
+            })(source, target);
+        }
 
-            return proxy;
+        static ConcurrentDictionary<Type, ConcurrentDictionary<string, Action<object, string, object>>> _dicSetEntityValueWithPropertyName = new ConcurrentDictionary<Type, ConcurrentDictionary<string, Action<object, string, object>>>();
+        public static void SetPropertyValue(Type sourceType, object source, string propertyOrField, object value)
+        {
+            if (source == null) return;
+            if (sourceType == null) sourceType = source.GetType();
+            _dicSetEntityValueWithPropertyName
+                .GetOrAdd(sourceType, et => new ConcurrentDictionary<string, Action<object, string, object>>())
+                .GetOrAdd(propertyOrField, pf =>
+                {
+                    var t = sourceType;
+                    var parm1 = Expression.Parameter(typeof(object));
+                    var parm2 = Expression.Parameter(typeof(string));
+                    var parm3 = Expression.Parameter(typeof(object));
+                    var var1Parm = Expression.Variable(t);
+                    var exps = new List<Expression>(new Expression[] {
+                        Expression.Assign(var1Parm, Expression.TypeAs(parm1, t))
+                    });
+                    var memberInfos = t.GetMember(pf, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(a => a.MemberType == MemberTypes.Field || a.MemberType == MemberTypes.Property);
+                    foreach (var memberInfo in memberInfos) {
+                        exps.Add(
+                            Expression.Assign(
+                                Expression.MakeMemberAccess(var1Parm, memberInfo),
+                                Expression.Convert(
+                                    parm3,
+                                    memberInfo.MemberType == MemberTypes.Field ? (memberInfo as FieldInfo)?.FieldType : (memberInfo as PropertyInfo)?.PropertyType
+                                )
+                            )
+                        );
+                    }
+                    return Expression.Lambda<Action<object, string, object>>(Expression.Block(new[] { var1Parm }, exps), new[] { parm1, parm2, parm3 }).Compile();
+                })(source, propertyOrField, value);
         }
     }
 }

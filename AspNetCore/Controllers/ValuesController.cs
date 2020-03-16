@@ -10,12 +10,12 @@ namespace AspNetCore.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class ValuesController : ControllerBase
     {
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<ValuesController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger,
+        public ValuesController(ILogger<ValuesController> logger,
             MyClass1 cls1, MyClass2 cls2, MyClass1 cls11)
         {
             

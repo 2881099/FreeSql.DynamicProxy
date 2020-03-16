@@ -56,23 +56,27 @@ namespace FreeSql
 
             var matchedMemberInfos = new List<MemberInfo>();
             var matchedAttributes = new List<DynamicProxyAttribute>();
+            var matchedAttributesFromServices = new List<FieldInfo[]>();
             var className = $"AopProxyClass___{Guid.NewGuid().ToString("N")}";
             var methodOverrideSb = new StringBuilder();
             var sb = methodOverrideSb;
 
             #region Common Code
+
             Func<Type, DynamicProxyInjectorType, bool, int, string, string> getMatchedAttributesCode = (returnType, injectorType, isAsync, attrsIndex, proxyMethodName) =>
             {
                 var sbt = new StringBuilder();
                 for (var a = attrsIndex; a < matchedAttributes.Count; a++)
                 {
-                    sbt.Append($@"
-        var __DP_ARG___{proxyMethodName}{a} = new {(proxyMethodName == "Before" ? _beforeAgumentsName : _afterAgumentsName)}(this, {_injectorTypeName}.{injectorType.ToString()}, __DP_Meta.MatchedMemberInfos[{a}], __DP_ARG___parameters, __DP_Meta.MatchedAttributes[{a}], null, {(proxyMethodName == "Before" ? "null" : "__DP_ARG___exception")});
-        {(isAsync ? "await " : "")}__DP_Meta.MatchedAttributes[{a}].{proxyMethodName}(__DP_ARG___{proxyMethodName}{a});
+                    sbt.Append($@"{(proxyMethodName == "Before" ? $@"
+        var __DP_ARG___attribute{a} = __DP_Meta.{nameof(DynamicProxyMeta.CreateDynamicProxyAttribute)}({a});
+        __DP_ARG___attribute{a}_FromServicesCopyTo(__DP_ARG___attribute{a});" : "")}
+        var __DP_ARG___{proxyMethodName}{a} = new {(proxyMethodName == "Before" ? _beforeAgumentsName : _afterAgumentsName)}(this, {_injectorTypeName}.{injectorType.ToString()}, __DP_Meta.MatchedMemberInfos[{a}], __DP_ARG___parameters, {(proxyMethodName == "Before" ? "null" : "__DP_ARG___return_value, __DP_ARG___exception")});
+        {(isAsync ? "await " : "")}__DP_ARG___attribute{a}.{proxyMethodName}(__DP_ARG___{proxyMethodName}{a});
         {(proxyMethodName == "Before" ? 
         $@"if (__DP_ARG___is_return == false)
         {{
-            __DP_ARG___is_return = __DP_ARG___{proxyMethodName}{a}.IsReturn;{(returnType != typeof(void) ? $@"
+            __DP_ARG___is_return = __DP_ARG___{proxyMethodName}{a}.Returned;{(returnType != typeof(void) ? $@"
             if (__DP_ARG___is_return) __DP_ARG___return_value = __DP_ARG___{proxyMethodName}{a}.ReturnValue;" : "")}
         }}" : 
         $"if (__DP_ARG___{proxyMethodName}{a}.Exception != null && __DP_ARG___{proxyMethodName}{a}.ExceptionHandled == false) throw __DP_ARG___{proxyMethodName}{a}.Exception;")}");
@@ -91,6 +95,11 @@ namespace FreeSql
                 (returnType.IsValueType ? $"return ({returnType.CSharpFullName()})__DP_ARG___return_value;" : $"return __DP_ARG___return_value as {returnType.CSharpFullName()};")))}");
                 return sbt.ToString();
             };
+            Func<string, Type, string> getMatchedAttributesCodeAuditParameter = (methodParameterName, methodParameterType) =>
+            {
+                return $@"
+            if (!object.ReferenceEquals({methodParameterName}, __DP_ARG___parameters[""{methodParameterName}""])) {methodParameterName} = {(methodParameterType.IsValueType ? $@"({methodParameterType.CSharpFullName()})__DP_ARG___parameters[""{methodParameterName}""]" : $@"__DP_ARG___parameters[""{methodParameterName}""] as {methodParameterType.CSharpFullName()}")};";
+            };
             #endregion
 
             #region Methods
@@ -105,7 +114,13 @@ namespace FreeSql
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => method));
                 matchedAttributes.AddRange(attrs);
-                if (method.IsVirtual == false)
+#if ns20 || ns21
+                matchedAttributesFromServices.AddRange(attrs.Select(af => af.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                    .Where(gf => gf.GetCustomAttribute(typeof(DynamicProxyFromServicesAttribute)) != null).ToArray()));
+#else
+                matchedAttributesFromServices.AddRange(attrs.Select(af => new FieldInfo[0]));
+#endif
+                if (method.IsVirtual == false || method.IsFinal)
                 {
                     if (isThrow) throw new ArgumentException($"FreeSql.DynamicProxy 失败提示：{typeCSharpName} 方法 {method.Name} 需要使用 virtual 标记");
                     return new DynamicProxyMeta(
@@ -139,7 +154,10 @@ namespace FreeSql
 
         try
         {{
-            if (__DP_ARG___is_return == false) {(returnType != typeof(void) ? "__DP_ARG___return_value = " : "")}{(methodIsAsync ? "await " : "")}base.{method.Name}({(string.Join(", ", method.GetParameters().Select(a => a.Name)))});
+            if (__DP_ARG___is_return == false)
+            {{{string.Join("", method.GetParameters().Select(a => getMatchedAttributesCodeAuditParameter(a.Name, a.ParameterType)))}
+                {(returnType != typeof(void) ? "__DP_ARG___return_value = " : "")}{(methodIsAsync ? "await " : "")}base.{method.Name}({(string.Join(", ", method.GetParameters().Select(a => a.Name)))});
+            }}
         }}
         catch (Exception __DP_ARG___ex)
         {{
@@ -159,10 +177,10 @@ namespace FreeSql
             {
                 var getMethod = prop2.GetGetMethod(false);
                 var setMethod = prop2.GetSetMethod(false);
-                if (getMethod?.IsVirtual == false && setMethod?.IsVirtual == false)
+                if (getMethod?.IsFinal == true || setMethod?.IsFinal == true || (getMethod?.IsVirtual == false && setMethod?.IsVirtual == false))
                 {
-                    if (getMethod.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).Any() ||
-                        setMethod.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).Any())
+                    if (getMethod?.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).Any() == true ||
+                        setMethod?.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).Any() == true)
                     {
                         if (isThrow) throw new ArgumentException($"FreeSql.DynamicProxy 失败提示：{typeCSharpName} 属性 {prop2.Name} 需要使用 virtual 标记");
                         continue;
@@ -188,6 +206,12 @@ namespace FreeSql
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => prop2));
                 matchedAttributes.AddRange(attrs);
+#if ns20 || ns21
+                matchedAttributesFromServices.AddRange(attrs.Select(af => af.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                    .Where(gf => gf.GetCustomAttribute(typeof(DynamicProxyFromServicesAttribute)) != null).ToArray()));
+#else
+                matchedAttributesFromServices.AddRange(attrs.Select(af => new FieldInfo[0]));
+#endif
 
                 var returnTypeCSharpName = prop2.PropertyType.CSharpFullName();
 
@@ -245,7 +269,10 @@ namespace FreeSql
 
             try
             {{
-                if (__DP_ARG___is_return == false) base.{prop2.Name} = value;
+                if (__DP_ARG___is_return == false)
+                {{{getMatchedAttributesCodeAuditParameter("value", prop2.PropertyType)}
+                    base.{prop2.Name} = value;
+                }}
             }}
             catch (Exception __DP_ARG___ex)
             {{
@@ -269,13 +296,28 @@ namespace FreeSql
             {
                 #region Constructors
                 sb = new StringBuilder();
+                var fromServicesTypes = matchedAttributesFromServices.SelectMany(fs => fs).GroupBy(a => a.FieldType).Select((a, b) => new KeyValuePair<Type, string>(a.Key, $"__DP_ARG___FromServices_{b}")).ToDictionary(a => a.Key, a => a.Value);
+                sb.Append(string.Join("", fromServicesTypes.Select(serviceType => $@"
+    private {serviceType.Key.CSharpFullName()} {serviceType.Value};")));
                 foreach (var ctor in ctors)
                 {
                     sb.Append($@"
 
-    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctor.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
+    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctor.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))}{
+                        (fromServicesTypes.Any() ? "" : ", ")}{
+                        string.Join(", ", fromServicesTypes.Select(serviceType => $@"{serviceType.Key.CSharpFullName()} parameter{serviceType.Value}"))})
         : base({(string.Join(", ", ctor.GetParameters().Select(a => a.Name)))})
-    {{
+    {{{string.Join("", fromServicesTypes.Select(serviceType => $@"
+        {serviceType.Value} = parameter{serviceType.Value};"))}
+    }}");
+                }
+                for (var a = 0; a < matchedAttributesFromServices.Count; a++)
+                {
+                    sb.Append($@"
+
+    private void __DP_ARG___attribute{a}_FromServicesCopyTo({_idynamicProxyName} attr)
+    {{{string.Join("", matchedAttributesFromServices[a].Select(fs => $@"
+        __DP_Meta.{nameof(DynamicProxyMeta.SetDynamicProxyAttributePropertyValue)}({a}, attr, ""{fs.Name}"", {fromServicesTypes[fs.FieldType]});"))}
     }}");
                 }
                 #endregion

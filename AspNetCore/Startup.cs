@@ -98,6 +98,9 @@ namespace AspNetCore
     {
         public string Key { get; set; }
 
+        [FreeSql.DynamicProxyFromServices]
+        public IServiceProvider sp;
+
         public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
         {
             args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";

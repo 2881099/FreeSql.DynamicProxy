@@ -23,15 +23,11 @@ namespace FreeSql
         /// 方法或属性，执行时候的参数值
         /// </summary>
         public Dictionary<string, object> Parameters { get; }
-        /// <summary>
-        /// 生效的特性
-        /// </summary>
-        public DynamicProxyAttribute Attribute { get; }
 
         /// <summary>
         /// 是否拦截，在代理层作为判断条件，设置 ReturnValue 值时生效
         /// </summary>
-        public bool IsReturn { get; private set; }
+        public bool Returned { get; private set; }
         private object _ReturnValue;
         /// <summary>
         /// 拦截自定义返回值<para></para>
@@ -44,24 +40,17 @@ namespace FreeSql
             {
                 if (_ReturnValue == value) return;
                 _ReturnValue = value;
-                IsReturn = true;
+                Returned = true;
             }
         }
 
-        /// <summary>
-        /// Before/After 共用包
-        /// </summary>
-        public Dictionary<string, object> AfterBag { get; }
-
-        public DynamicProxyBeforeArguments(object sender, DynamicProxyInjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, DynamicProxyAttribute attribute, object returnValue, Dictionary<string, object> afterBag)
+        public DynamicProxyBeforeArguments(object sender, DynamicProxyInjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, object returnValue)
         {
             this.Sender = sender;
             this.InjectorType = injectorType;
             this.MemberInfo = memberInfo;
             this.Parameters = parameters;
-            this.Attribute = attribute;
             this._ReturnValue = returnValue;
-            this.AfterBag = afterBag ?? new Dictionary<string, object>();
         }
     }
 
@@ -83,15 +72,11 @@ namespace FreeSql
         /// 方法或属性，执行时候的参数值
         /// </summary>
         public Dictionary<string, object> Parameters { get; }
-        /// <summary>
-        /// 生效的特性
-        /// </summary>
-        public DynamicProxyAttribute Attribute { get; }
 
         /// <summary>
-        /// Before/After 共用包
+        /// 方法的返回值
         /// </summary>
-        public Dictionary<string, object> BeforeBag { get; }
+        public object ReturnValue { get; }
         /// <summary>
         /// 发生的错误
         /// </summary>
@@ -99,18 +84,17 @@ namespace FreeSql
         /// <summary>
         /// 发生异常时，是否处理异常<para></para>
         /// false: 抛出异常 (默认)
-        /// true: 不抛出异常 (继续执行)
+        /// true: 忽略异常 (继续执行)
         /// </summary>
         public bool ExceptionHandled { get; set; }
 
-        public DynamicProxyAfterArguments(object sender, DynamicProxyInjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, DynamicProxyAttribute attribute, Dictionary<string, object> beforeBag, Exception exception)
+        public DynamicProxyAfterArguments(object sender, DynamicProxyInjectorType injectorType, MemberInfo memberInfo, Dictionary<string, object> parameters, object returnValue, Exception exception)
         {
             this.Sender = sender;
             this.InjectorType = injectorType;
             this.MemberInfo = memberInfo;
             this.Parameters = parameters;
-            this.Attribute = attribute;
-            this.BeforeBag = beforeBag ?? new Dictionary<string, object>();
+            this.ReturnValue = returnValue;
             this.Exception = exception;
         }
     }

@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 
 namespace FreeSql
 {
+
+#if ns20 || ns21
+    [AttributeUsage(AttributeTargets.Field)]
+    public class DynamicProxyFromServicesAttribute : Attribute { }
+#endif
+
     /// <summary>
     /// 实现该特性，标记的方法/属性支持动态代理
     /// </summary>
