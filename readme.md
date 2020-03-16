@@ -41,7 +41,6 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 ```csharp
 public class CustomRepository
 {
-
     [Custom]
     public virtual string Get(string key)
     {
@@ -65,7 +64,6 @@ public class CustomRepository
 ```
 
 ## Step 4: Testing in AspNetCore
-
 
 1. Use ServiceProviderFactory
 
