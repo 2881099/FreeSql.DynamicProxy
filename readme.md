@@ -30,7 +30,7 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 ```
 
 - 拦截器和特性一起定义，合二为一；
-- 拦截器私有字段可从Ioc反转获得对象，如上面的 _service；
+- 私有字段可从Ioc反转获得对象，如上面的 _service；
 
 ## 开始拦截
 
