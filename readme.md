@@ -78,7 +78,7 @@ public class CustomRepository
 
 > ExceptionHandled：False: 抛出异常 (默认), True: 忽略异常 (继续执行)
 
-## AspNetCore 使用
+## AspNetCore 环境
 
 1. 修改 Program.cs
 
