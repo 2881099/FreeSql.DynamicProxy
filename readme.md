@@ -1,4 +1,4 @@
-.Net 轻量级动态代理，支持 .NetCore 或 .NetFramework4.0+ 平台。
+轻量级 AOP 动态代理，支持 .NetCore 或 .NetFramework4.0+ 平台。
 
 - 支持 同步/异步方法拦截；
 - 支持 方法的参数值拦截，并支持修改参数值；
