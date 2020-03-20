@@ -1,29 +1,24 @@
-The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+.
+.Net 轻量级动态代理，支持 .NetCore 或 .NetFramework4.0+ 平台。
 
-- Support asynchronous method interception
-- Support method parameter interception
-- Support property interception
-- Support multiple intercepts
-- Support for dependency injection and inversion of control
+- 支持 同步/异步方法拦截；
+- 支持 方法的参数值拦截，并支持修改参数值；
+- 支持 属性拦截；
+- 支持 多个拦截器同时生效；
+- 支持 依赖注入的使用方式；
 
 > dotnet add package FreeSql.DynamicProxy
 
-> Install-Package FreeSql.DynamicProxy
-
-## Defining Attributes
+## 定义拦截器
 
 ```csharp
 class CustomAttribute : FreeSql.DynamicProxyAttribute
 {
-    //Inversion of control
     [FreeSql.DynamicProxyFromServices]
     IServiceProvider _service;
 
     public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
     {
         Console.WriteLine($"{args.MemberInfo.Name} Before");
-        //args.Parameters["key"] = "NewKey";
-        //args.ReturnValue = $"{args.MemberInfo.Name} Before Changed";
         return base.Before(args);
     }
     public override Task After(FreeSql.DynamicProxyAfterArguments args)
@@ -34,7 +29,10 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 }
 ```
 
-## Interceptor method
+- 拦截器也是特性定义，合二为一；
+- 拦截器中可以定义私有字段，从Ioc中反转获得容器对象，如上面的 _service；
+
+## 开始拦截
 
 ```csharp
 public class CustomRepository
@@ -42,28 +40,47 @@ public class CustomRepository
     [Custom]
     public virtual string Get(string key)
     {
+        Console.WriteLine($"CustomRepository Get");
         return $"CustomRepository.Get({key}) value";
-    }
-
-    [Custom]
-    async public virtual Task<string> GetAsync(string key)
-    {
-        await Task.Yield();
-        return $"CustomRepository.GetAsync({key}) value";
-    }
-
-    public virtual string Text
-    {
-        [Custom]
-        get; 
-        set;
     }
 }
 ```
 
-## Testing in AspNetCore
+- 拦截的方法须使用修饰符 virtual；
 
-1. Use ServiceProviderFactory
+## Before/After 参数说明
+
+1. Before args
+
+| Property | Type | Notes |
+| -- | -- | -- |
+| Sender | Object | 代理对象 |
+| InjectorType | Enum | Method, PropertyGet, PropertySet |
+| MemberInfo | MemberInfo | 反射信息 |
+| Parameters | Dictionary\<string, object\> | 方法的参数列表 |
+| ReturnValue | Object | 设置方法的返回值 |
+
+> 拦截并修改方法的参数值： args.Parameters["key"] = "NewKey";
+
+> 拦截方法的返回值：args.ReturnValue = "NewValue";
+
+2. After args
+
+| Property | Type | Notes |
+| -- | -- | -- |
+| Sender | Object | 代理对象 |
+| InjectorType | Enum | Method, PropertyGet, PropertySet |
+| MemberInfo | MemberInfo | 反射信息 |
+| Parameters | Dictionary\<string, object\> | 方法的参数列表 |
+| ReturnValue | Object | 获取方法的返回值 |
+| Exception | Exception | 原方法执行的异常对象 |
+| ExceptionHandled | bool | 控制原方法执行发生异常后的行为 |
+
+> ExceptionHandled：False: 抛出异常 (默认), True: 忽略异常 (继续执行)
+
+## AspNetCore 使用
+
+1. 修改 Program.cs
 
 ```csharp
 public class Program
@@ -79,21 +96,20 @@ public class Program
             {
                 webBuilder.UseStartup<Startup>();
             })
-            UseServiceProviderFactory.(new FreeSql.DynamicProxyServiceProviderFactory());
+            .UseServiceProviderFactory(new FreeSql.DynamicProxyServiceProviderFactory());
 }
 ```
 
-2. Add Dependency injection
+2. 注入 CustomRepository
 
 ```csharp
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllers();
         services.AddScoped<CustomRepository>();
     }
 ```
 
-3. Create Controller
+3. 创建 Controller
 
 ```csharp
 public class ValuesController : ControllerBase
@@ -101,66 +117,15 @@ public class ValuesController : ControllerBase
     [HttpGet("1")]
     public string Get([FromServices]CustomRepository repo, [FromQuery]string key)
     {
-        Console.WriteLine(repo.Get(key));
-        repo.Text = "Invalid value";
-        Console.WriteLine(repo.Text);
-
-        return "Get OK";
-    }
-    [HttpGet("2")]
-    async public Task<string> GetAsync([FromServices]CustomRepository repo, [FromQuery]string key)
-    {
-        Console.WriteLine(await repo.GetAsync(key));
-        repo.Text = "Invalid value";
-        Console.WriteLine(repo.Text);
-
-        return "GetAsync OK";
+        return repo.Get(key);
     }
 }
 ```
 
-4. Console Output
+4. 控制台输出
 
 ```shell
 Get Before
+CustomRepository Get
 Get After
-CustomRepository.Get(test1) value
-Text Before
-Text After
-Invalid value
-
-GetAsync Before
-GetAsync After
-CustomRepository.GetAsync(test2) value
-Text Before
-Text After
-Invalid value
 ```
-
-## Arguments
-
-1. Before Arguments
-
-| Property | Type | Notes |
-| -- | -- | -- |
-| Sender | Object | Proxy Object |
-| InjectorType | Enum | Method, PropertyGet, PropertySet |
-| MemberInfo | MemberInfo | Reflection information |
-| Parameters | Dictionary\<string, object\> | Method execution parameters |
-| ReturnValue | Object | Intercept the original method and set the return value |
-
-> Parameters: Values can be modified (Intercept)
-
-2. After Arguments
-
-| Property | Type | Notes |
-| -- | -- | -- |
-| Sender | Object | Proxy Object |
-| InjectorType | Enum | Method, PropertyGet, PropertySet |
-| MemberInfo | MemberInfo | Reflection information |
-| Parameters | Dictionary\<string, object\> | Method execution parameters |
-| ReturnValue | Object | Return value of method |
-| Exception | Exception | Exception information of original method execution |
-| ExceptionHandled | bool | Handle exceptions when exceptions occur |
-
-> ExceptionHandled: False: throw exception (default), True: ignore exception (continue)

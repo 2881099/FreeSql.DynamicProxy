@@ -111,14 +111,12 @@
             方法执行之前
             </summary>
             <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="M:FreeSql.DynamicProxyAttribute.After(FreeSql.DynamicProxyAfterArguments)">
             <summary>
-            方法执行之前
+            方法执行之后
             </summary>
             <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="M:FreeSql.DynamicProxyExtensions.CSharpFullName(System.Type)">
             <summary>
@@ -126,6 +124,10 @@
             </summary>
             <param name="that"></param>
             <returns></returns>
+        </member>
+    </members>
+</doc>
+  <returns></returns>
         </member>
     </members>
 </doc>
