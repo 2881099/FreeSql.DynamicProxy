@@ -2,23 +2,24 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;net45;net40</TargetFrameworks>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>YeXiangQin</Authors>
     <Description>
-      The dynamic proxy integration enables method calls on The .NetCore or .NetFramework4.0+.
+      轻量级 AOP 动态代理，支持 .NetCore 或 .NetFramework4.0+ 平台。
 
-      - Support asynchronous method interception
-      - Support method parameter interception
-      - Support property interception
-      - Support multiple intercepts
-      - Support for dependency injection and inversion of control
+      - 支持 同步/异步方法拦截(DynamicProxy)；
+      - 支持 方法的参数值拦截，并支持修改参数值；
+      - 支持 属性拦截；
+      - 支持 多个拦截器同时生效；
+      - 支持 依赖注入的使用方式；
+      - 支持 动态接口实现(DynamicInterface)；
     </Description>
     <PackageProjectUrl>https://github.com/2881099/FreeSql.DynamicProxy</PackageProjectUrl>
     <RepositoryUrl>https://github.com/2881099/FreeSql.DynamicProxy</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>DynamicProxy;Aspect;AOP;Inject</PackageTags>
+    <PackageTags>DynamicProxy;DynamicInterface;Aspect;AOP;Inject</PackageTags>
     <PackageId>$(AssemblyName)</PackageId>
     <Title>$(AssemblyName)</Title>
     <IsPackable>true</IsPackable>

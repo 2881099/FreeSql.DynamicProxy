@@ -1,4 +1,5 @@
 ﻿using FreeSql;
+using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
 
@@ -81,7 +82,6 @@ class Program
     static void Main(string[] args)
     {
         FreeSql.DynamicProxy.GetAvailableMeta(typeof(MyClass)); //The first dynamic compilation was slow
-
         var dt = DateTime.Now;
         var pxy = new MyClass { T2 = "123123" }.ToDynamicProxy();
         Console.WriteLine(pxy.Get("key"));
@@ -98,6 +98,51 @@ class Program
         pxy.Text = "testSetProp2";
         Console.WriteLine(pxy.Text);
 
-        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms");
+        Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds + " ms\r\n");
+
+        var api = DynamicProxy.Resolve<IUserApi>();
+        api.Add(new UserInfo { Id = "001", Remark = "add" });
+        Console.WriteLine(JsonConvert.SerializeObject(api.Get("001")));
+    }
+}
+
+public interface IUserApi
+{
+    [HttpGet("api/user")]
+    UserInfo Get(string id);
+
+    [HttpPost("api/user")]
+    void Add(UserInfo user);
+}
+public class UserInfo
+{
+    public string Id { get; set; }
+    public string Remark { get; set; }
+}
+
+class HttpGetAttribute : FreeSql.DynamicProxyAttribute
+{
+    string _url;
+    public HttpGetAttribute(string url)
+    {
+        _url = url;
+    }
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
+    {
+        args.ReturnValue = new UserInfo { Id = "ResultId", Remark = $"{args.MemberInfo.Name} HttpGet {_url}" };
+        return base.Before(args);
+    }
+}
+class HttpPostAttribute : FreeSql.DynamicProxyAttribute
+{
+    string _url;
+    public HttpPostAttribute(string url)
+    {
+        _url = url;
+    }
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
+    {
+        Console.WriteLine($"{args.MemberInfo.Name} HttpPost {_url} Body {JsonConvert.SerializeObject(args.Parameters)}");
+        return base.Before(args);
     }
 }

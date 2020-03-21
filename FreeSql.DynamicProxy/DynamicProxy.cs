@@ -30,6 +30,12 @@ namespace FreeSql
             return meta?.CreateProxyInstance(source) as T;
         }
 
+        public static T Resolve<T>() where T : class {
+            var meta = _metaCache.GetOrAdd(typeof(T), tp => CreateDynamicProxyMeta(tp, true, true));
+            if (meta == null || meta.ProxyType == null) return null;
+            return DynamicProxyMeta.CreateInstanceDefault(meta.ProxyType) as T;
+        }
+
         static readonly string _metaName = typeof(DynamicProxyMeta).CSharpFullName();
         static readonly string _beforeAgumentsName = typeof(DynamicProxyBeforeArguments).CSharpFullName();
         static readonly string _afterAgumentsName = typeof(DynamicProxyAfterArguments).CSharpFullName();
@@ -139,18 +145,11 @@ namespace FreeSql
                 //if (attrs.Where(a => a.GetType().GetMethod("BeforeAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any() ||
                 //    attrs.Where(a => a.GetType().GetMethod("AfterAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null).Any())
                 //{
-                    
+
                 //}
 #endif
 
-                sb.Append($@"
-
-    {(methodIsAsync ? "async " : "")}{(method.IsPrivate ? "private " : "")}{(method.IsFamily ? "protected " : "")}{(method.IsAssembly ? "internal " : "")}{(method.IsPublic ? "public " : "")}{(method.IsStatic ? "static " : "")}{(method.IsAbstract ? "abstract " : "")}{(method.IsVirtual ? "override " : "")}{method.ReturnType.CSharpFullName()} {method.Name}({string.Join(", ", method.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
-    {{
-        Exception __DP_ARG___exception = null;
-        var __DP_ARG___is_return = false;{(returnType != typeof(void) ? "\r\n        object __DP_ARG___return_value = null;" : "")}
-        var __DP_ARG___parameters = new Dictionary<string, object>();{string.Join("\r\n        ", method.GetParameters().Select(a => $"__DP_ARG___parameters.Add(\"{a.Name}\", {a.Name});"))}
-        {getMatchedAttributesCode(returnType, DynamicProxyInjectorType.Method, methodIsAsync, attrsIndex, "Before")}
+                var baseInvoke = type.IsInterface == false ? $@"
 
         try
         {{
@@ -162,7 +161,17 @@ namespace FreeSql
         catch (Exception __DP_ARG___ex)
         {{
             __DP_ARG___exception = __DP_ARG___ex;
-        }}
+        }}" : "";
+
+                sb.Append($@"
+
+    {(methodIsAsync ? "async " : "")}{(method.IsPrivate ? "private " : "")}{(method.IsFamily ? "protected " : "")}{(method.IsAssembly ? "internal " : "")}{(method.IsPublic ? "public " : "")}{(method.IsStatic ? "static " : "")}{(method.IsAbstract && type.IsInterface == false ? "abstract " : "")}{(method.IsVirtual && type.IsInterface == false ? "override " : "")}{method.ReturnType.CSharpFullName()} {method.Name}({string.Join(", ", method.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
+    {{
+        Exception __DP_ARG___exception = null;
+        var __DP_ARG___is_return = false;
+        object __DP_ARG___return_value = null;
+        var __DP_ARG___parameters = new Dictionary<string, object>();{string.Join("\r\n        ", method.GetParameters().Select(a => $"__DP_ARG___parameters.Add(\"{a.Name}\", {a.Name});"))}
+        {getMatchedAttributesCode(returnType, DynamicProxyInjectorType.Method, methodIsAsync, attrsIndex, "Before")}{baseInvoke}
         {getMatchedAttributesCode(returnType, DynamicProxyInjectorType.Method, methodIsAsync, attrsIndex, "After")}
         {getMatchedAttributesCodeReturn(returnType, DynamicProxyInjectorType.Method, methodIsAsync, null)}
     }}");
@@ -172,7 +181,7 @@ namespace FreeSql
             var propertyOverrideSb = new StringBuilder();
             sb = propertyOverrideSb;
             #region Property
-            var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            var props = type.IsInterface == false ? type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) : new PropertyInfo[0];
             foreach (var prop2 in props)
             {
                 var getMethod = prop2.GetGetMethod(false);

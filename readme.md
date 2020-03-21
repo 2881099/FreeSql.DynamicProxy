@@ -5,10 +5,11 @@
 - 支持 属性拦截；
 - 支持 多个拦截器同时生效；
 - 支持 依赖注入的使用方式；
+- 支持 动态接口实现；
 
 > dotnet add package FreeSql.DynamicProxy
 
-## 定义拦截器
+## 1、定义拦截器
 
 ```csharp
 class CustomAttribute : FreeSql.DynamicProxyAttribute
@@ -32,7 +33,7 @@ class CustomAttribute : FreeSql.DynamicProxyAttribute
 - 拦截器和特性一起定义，合二为一；
 - 私有字段可从Ioc反转获得对象，如上面的 _service；
 
-## 开始拦截
+## 2、开始拦截
 
 ```csharp
 public class CustomRepository
@@ -48,7 +49,7 @@ public class CustomRepository
 
 - 拦截的方法须使用修饰符 virtual；
 
-## Before/After 参数说明
+## 3、Before/After 参数说明
 
 1. Before args
 
@@ -78,9 +79,9 @@ public class CustomRepository
 
 > ExceptionHandled：False: 抛出异常 (默认), True: 忽略异常 (继续执行)
 
-## AspNetCore 环境
+## 4、AspNetCore 环境
 
-1. 修改 Program.cs
+第一步. 修改 Program.cs
 
 ```csharp
 public class Program
@@ -100,7 +101,7 @@ public class Program
 }
 ```
 
-2. 注入 CustomRepository
+第二步. 注入 CustomRepository
 
 ```csharp
     public void ConfigureServices(IServiceCollection services)
@@ -109,7 +110,7 @@ public class Program
     }
 ```
 
-3. 创建 Controller
+第三步. 创建 Controller
 
 ```csharp
 public class ValuesController : ControllerBase
@@ -122,10 +123,38 @@ public class ValuesController : ControllerBase
 }
 ```
 
-4. 控制台输出
+第四步. 控制台输出
 
 ```shell
 Get Before
 CustomRepository Get
 Get After
+```
+
+## 5、动态接口实现
+
+```csharp
+var api = DynamicProxy.Resolve<IUserApi>();
+api.Add(new UserInfo { Id = "001", Remark = "add" });
+Console.WriteLine(JsonConvert.SerializeObject(api.Get("001")));
+
+public interface IUserApi
+{
+    [HttpGet("api/user")]
+    string Get(string id);
+}
+
+class HttpGetAttribute : FreeSql.DynamicProxyAttribute
+{
+    string _url;
+    public HttpGetAttribute(string url)
+    {
+        _url = url;
+    }
+    public override Task Before(FreeSql.DynamicProxyBeforeArguments args)
+    {
+        args.ReturnValue = $"{args.MemberInfo.Name} HttpGet {_url}";
+        return base.Before(args);
+    }
+}
 ```

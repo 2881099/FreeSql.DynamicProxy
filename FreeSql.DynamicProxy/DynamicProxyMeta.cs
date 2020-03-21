@@ -89,7 +89,7 @@ namespace FreeSql
             if (type.IsArray) return Array.CreateInstance(type, 0);
             var ctorParms = InternalGetTypeConstructor0OrFirst(type, true)?.GetParameters();
             if (ctorParms == null || ctorParms.Any() == false) return Activator.CreateInstance(type, null);
-            return Activator.CreateInstance(type, ctorParms.Select(a => a.ParameterType.IsInterface || a.ParameterType.IsAbstract ? null : Activator.CreateInstance(a.ParameterType, null)).ToArray());
+            return Activator.CreateInstance(type, ctorParms.Select(a => a.ParameterType.IsInterface || a.ParameterType.IsAbstract || a.ParameterType == typeof(string) ? null : Activator.CreateInstance(a.ParameterType, null)).ToArray());
         }
         internal static NewExpression InternalNewExpression(Type that)
         {
