@@ -224,21 +224,27 @@ namespace FreeSql
 
                 var returnTypeCSharpName = prop2.PropertyType.CSharpFullName();
 
+                var propModification = (getMethod?.IsPublic == true || setMethod?.IsPublic == true ? "public " : (getMethod?.IsAssembly == true || setMethod?.IsAssembly == true ? "internal " : (getMethod?.IsFamily == true || setMethod?.IsFamily == true ? "protected " : (getMethod?.IsPrivate == true || setMethod?.IsPrivate == true ? "private " : ""))));
+                var propSetModification = (setMethod?.IsPublic == true ? "public " : (setMethod?.IsAssembly == true ? "internal " : (setMethod?.IsFamily == true ? "protected " : (setMethod?.IsPrivate == true ? "private " : ""))));
+                var propGetModification = (getMethod?.IsPublic == true ? "public " : (getMethod?.IsAssembly == true ? "internal " : (getMethod?.IsFamily == true ? "protected " : (getMethod?.IsPrivate == true ? "private " : ""))));
+                if (propSetModification == propModification) propSetModification = "";
+                if (propGetModification == propModification) propGetModification = "";
+
                 //if (getMethod.IsAbstract) sb.Append("abstract ");
                 sb.Append($@"
 
-    {(getMethod?.IsPublic == true || setMethod?.IsPublic == true ? "public " : (getMethod?.IsAssembly == true || setMethod?.IsAssembly == true ? "internal " : (getMethod?.IsFamily == true || setMethod?.IsFamily == true ? "protected " : (getMethod?.IsPrivate == true || setMethod?.IsPrivate == true ? "private " : ""))))}{(getMethod?.IsStatic == true ? "static " : "")}{(getMethod?.IsVirtual == true ? "override " : "")}{returnTypeCSharpName} {prop2.Name}
+    {propModification}{(getMethod?.IsStatic == true ? "static " : "")}{(getMethod?.IsVirtual == true ? "override " : "")}{returnTypeCSharpName} {prop2.Name}
     {{");
 
                 if (getMethod != null)
                 {
                     if (getMethodAttributeAny == false) sb.Append($@"
-        get
+        {propGetModification} get
         {{
             return base.{prop2.Name}
         }}");
                     else sb.Append($@"
-        get
+        {propGetModification} get
         {{
             Exception __DP_ARG___exception = null;
             var __DP_ARG___is_return = false;
@@ -262,12 +268,12 @@ namespace FreeSql
                 if (setMethod != null)
                 {
                     if (setMethodAttributeAny == false) sb.Append($@"
-        set
+        {propSetModification} set
         {{
             base.{prop2.Name} = value;
         }}");
                     else sb.Append($@"
-        set
+        {propSetModification} set
         {{
             Exception __DP_ARG___exception = null;
             var __DP_ARG___is_return = false;
