@@ -135,7 +135,6 @@ Get After
 
 ```csharp
 var api = DynamicProxy.Resolve<IUserApi>();
-api.Add(new UserInfo { Id = "001", Remark = "add" });
 Console.WriteLine(JsonConvert.SerializeObject(api.Get("001")));
 
 public interface IUserApi
