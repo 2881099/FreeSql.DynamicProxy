@@ -25,6 +25,7 @@ namespace AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddIdentityServer();
             services.AddScoped<CustomRepository>();
         }
 
@@ -34,7 +35,6 @@ namespace AspNetCore
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>

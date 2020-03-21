@@ -19,24 +19,43 @@ namespace FreeSql
         /// <returns></returns>
         internal static string CSharpFullName(this Type that)
         {
+            return CSharpName(that, true);
+        }
+        static string CSharpName(this Type that, bool isNameSpace)
+        {
             if (that == typeof(void)) return "void";
+            if (that.IsGenericParameter) return that.Name;
             var sb = new StringBuilder();
             var nestedType = that;
             while (nestedType.IsNested)
             {
-                sb.Insert(0, ".").Insert(0, nestedType.DeclaringType.Name);
+                sb.Insert(0, ".").Insert(0, CSharpName(nestedType.DeclaringType, false));
                 nestedType = nestedType.DeclaringType;
             }
-            if (string.IsNullOrEmpty(nestedType.Namespace) == false)
+            if (isNameSpace && string.IsNullOrEmpty(nestedType.Namespace) == false)
                 sb.Insert(0, ".").Insert(0, nestedType.Namespace);
+
             if (that.IsGenericType == false)
                 return sb.Append(that.Name).ToString();
+
+            var genericParameters = that.GetGenericArguments();
+            if (that.IsNested && that.DeclaringType.IsGenericType)
+            {
+                var dic = genericParameters.ToDictionary(a => a.Name);
+                foreach (var nestedGenericParameter in that.DeclaringType.GetGenericArguments())
+                    if (dic.ContainsKey(nestedGenericParameter.Name))
+                        dic.Remove(nestedGenericParameter.Name);
+                genericParameters = dic.Values.ToArray();
+            }
+            if (genericParameters.Any() == false)
+                return sb.Append(that.Name).ToString();
+
             sb.Append(that.Name.Remove(that.Name.IndexOf('`'))).Append("<");
             var genericTypeIndex = 0;
-            foreach (var genericType in that.GetGenericArguments())
+            foreach (var genericType in genericParameters)
             {
                 if (genericTypeIndex++ > 0) sb.Append(", ");
-                sb.Append(genericType.CSharpFullName());
+                sb.Append(CSharpName(genericType, true));
             }
             return sb.Append(">").ToString();
         }
