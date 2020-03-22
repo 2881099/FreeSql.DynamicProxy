@@ -30,18 +30,23 @@ namespace FreeSql
             return meta?.CreateProxyInstance(source) as T;
         }
 
+        /// <summary>
+        /// 获取 动态接口实现 对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T Resolve<T>() where T : class {
             var meta = _metaCache.GetOrAdd(typeof(T), tp => CreateDynamicProxyMeta(tp, true, true));
             if (meta == null || meta.ProxyType == null) return null;
             return DynamicProxyMeta.CreateInstanceDefault(meta.ProxyType) as T;
         }
 
-        static readonly string _metaName = typeof(DynamicProxyMeta).CSharpFullName();
-        static readonly string _beforeAgumentsName = typeof(DynamicProxyBeforeArguments).CSharpFullName();
-        static readonly string _afterAgumentsName = typeof(DynamicProxyAfterArguments).CSharpFullName();
-        static readonly string _injectorTypeName = typeof(DynamicProxyInjectorType).CSharpFullName();
-        static readonly string _idynamicProxyName = typeof(DynamicProxyAttribute).CSharpFullName();
-        static readonly string _dynamicProxyExceptionName = typeof(DynamicProxyException).CSharpFullName();
+        static readonly string _metaName = typeof(DynamicProxyMeta).DisplayCsharp();
+        static readonly string _beforeAgumentsName = typeof(DynamicProxyBeforeArguments).DisplayCsharp();
+        static readonly string _afterAgumentsName = typeof(DynamicProxyAfterArguments).DisplayCsharp();
+        static readonly string _injectorTypeName = typeof(DynamicProxyInjectorType).DisplayCsharp();
+        static readonly string _idynamicProxyName = typeof(DynamicProxyAttribute).DisplayCsharp();
+        static readonly string _dynamicProxyExceptionName = typeof(DynamicProxyException).DisplayCsharp();
 
         public static DynamicProxyMeta GetAvailableMeta(Type type)
         {
@@ -52,7 +57,7 @@ namespace FreeSql
         public static DynamicProxyMeta CreateDynamicProxyMeta(Type type, bool isCompile, bool isThrow)
         {
             if (type == null) return null;
-            var typeCSharpName = type.CSharpFullName();
+            var typeCSharpName = type.DisplayCsharp();
 
             if (type.IsNotPublic)
             {
@@ -92,19 +97,20 @@ namespace FreeSql
             Func<Type, DynamicProxyInjectorType, bool, string, string> getMatchedAttributesCodeReturn = (returnType, injectorType, isAsync, basePropertyValueTpl) =>
             {
                 var sbt = new StringBuilder();
+                var taskType = returnType.ReturnTypeWithoutTask();
                 sbt.Append($@"
         {(returnType == typeof(void) ? "return;" : (isAsync == false && returnType.IsTask() ?
-                (returnType.ReturnTypeWithoutTask().IsValueType ?
-                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(({returnType.ReturnTypeWithoutTask().CSharpFullName()})__DP_ARG___return_value) : ({returnType.CSharpFullName()})__DP_ARG___return_value);" :
-                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({returnType.ReturnTypeWithoutTask().CSharpFullName()}) ? System.Threading.Tasks.Task.FromResult(__DP_ARG___return_value as {returnType.ReturnTypeWithoutTask().CSharpFullName()}) : ({returnType.CSharpFullName()})__DP_ARG___return_value);"
+                (taskType.IsValueType || taskType.IsGenericParameter ?
+                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({taskType.DisplayCsharp()}) ? System.Threading.Tasks.Task.FromResult(({taskType.DisplayCsharp()})__DP_ARG___return_value) : ({returnType.DisplayCsharp()})__DP_ARG___return_value);" :
+                    $"return __DP_ARG___return_value == null ? null : (__DP_ARG___return_value.GetType() == typeof({taskType.DisplayCsharp()}) ? System.Threading.Tasks.Task.FromResult(__DP_ARG___return_value as {taskType.DisplayCsharp()}) : ({returnType.DisplayCsharp()})__DP_ARG___return_value);"
                 ) :
-                (returnType.IsValueType ? $"return ({returnType.CSharpFullName()})__DP_ARG___return_value;" : $"return __DP_ARG___return_value as {returnType.CSharpFullName()};")))}");
+                (returnType.IsValueType || returnType.IsGenericParameter ? $"return ({returnType.DisplayCsharp()})__DP_ARG___return_value;" : $"return __DP_ARG___return_value as {returnType.DisplayCsharp()};")))}");
                 return sbt.ToString();
             };
             Func<string, Type, string> getMatchedAttributesCodeAuditParameter = (methodParameterName, methodParameterType) =>
             {
                 return $@"
-            if (!object.ReferenceEquals({methodParameterName}, __DP_ARG___parameters[""{methodParameterName}""])) {methodParameterName} = {(methodParameterType.IsValueType ? $@"({methodParameterType.CSharpFullName()})__DP_ARG___parameters[""{methodParameterName}""]" : $@"__DP_ARG___parameters[""{methodParameterName}""] as {methodParameterType.CSharpFullName()}")};";
+            if (!object.ReferenceEquals({methodParameterName}, __DP_ARG___parameters[""{methodParameterName}""])) {methodParameterName} = {(methodParameterType.IsValueType ? $@"({methodParameterType.DisplayCsharp()})__DP_ARG___parameters[""{methodParameterName}""]" : $@"__DP_ARG___parameters[""{methodParameterName}""] as {methodParameterType.DisplayCsharp()}")};";
             };
             #endregion
 
@@ -165,7 +171,7 @@ namespace FreeSql
 
                 sb.Append($@"
 
-    {(methodIsAsync ? "async " : "")}{(method.IsPrivate ? "private " : "")}{(method.IsFamily ? "protected " : "")}{(method.IsAssembly ? "internal " : "")}{(method.IsPublic ? "public " : "")}{(method.IsStatic ? "static " : "")}{(method.IsAbstract && type.IsInterface == false ? "abstract " : "")}{(method.IsVirtual && type.IsInterface == false ? "override " : "")}{method.ReturnType.CSharpFullName()} {method.Name}({string.Join(", ", method.GetParameters().Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))})
+    {(methodIsAsync ? "async " : "")}{method.DisplayCsharp(true)}
     {{
         Exception __DP_ARG___exception = null;
         var __DP_ARG___is_return = false;
@@ -222,7 +228,7 @@ namespace FreeSql
                 matchedAttributesFromServices.AddRange(attrs.Select(af => new FieldInfo[0]));
 #endif
 
-                var returnTypeCSharpName = prop2.PropertyType.CSharpFullName();
+                var returnTypeCSharpName = prop2.PropertyType.DisplayCsharp();
 
                 var propModification = (getMethod?.IsPublic == true || setMethod?.IsPublic == true ? "public " : (getMethod?.IsAssembly == true || setMethod?.IsAssembly == true ? "internal " : (getMethod?.IsFamily == true || setMethod?.IsFamily == true ? "protected " : (getMethod?.IsPrivate == true || setMethod?.IsPrivate == true ? "private " : ""))));
                 var propSetModification = (setMethod?.IsPublic == true ? "public " : (setMethod?.IsAssembly == true ? "internal " : (setMethod?.IsFamily == true ? "protected " : (setMethod?.IsPrivate == true ? "private " : ""))));
@@ -313,15 +319,15 @@ namespace FreeSql
                 sb = new StringBuilder();
                 var fromServicesTypes = matchedAttributesFromServices.SelectMany(fs => fs).GroupBy(a => a.FieldType).Select((a, b) => new KeyValuePair<Type, string>(a.Key, $"__DP_ARG___FromServices_{b}")).ToDictionary(a => a.Key, a => a.Value);
                 sb.Append(string.Join("", fromServicesTypes.Select(serviceType => $@"
-    private {serviceType.Key.CSharpFullName()} {serviceType.Value};")));
+    private {serviceType.Key.DisplayCsharp()} {serviceType.Value};")));
                 foreach (var ctor in ctors)
                 {
                     var ctorParams = ctor.GetParameters();
                     sb.Append($@"
 
-    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctorParams.Select(a => $"{a.ParameterType.CSharpFullName()} {a.Name}"))}{
+    {(ctor.IsPrivate ? "private " : "")}{(ctor.IsFamily ? "protected " : "")}{(ctor.IsAssembly ? "internal " : "")}{(ctor.IsPublic ? "public " : "")}{className}({string.Join(", ", ctorParams.Select(a => $"{a.ParameterType.DisplayCsharp()} {a.Name}"))}{
                         (ctorParams.Any() && fromServicesTypes.Any() ? ", " : "")}{
-                        string.Join(", ", fromServicesTypes.Select(serviceType => $@"{serviceType.Key.CSharpFullName()} parameter{serviceType.Value}"))})
+                        string.Join(", ", fromServicesTypes.Select(serviceType => $@"{serviceType.Key.DisplayCsharp()} parameter{serviceType.Value}"))})
         : base({(string.Join(", ", ctorParams.Select(a => a.Name)))})
     {{{string.Join("", fromServicesTypes.Select(serviceType => $@"
         {serviceType.Value} = parameter{serviceType.Value};"))}
@@ -345,7 +351,7 @@ using System.Text;
 
 public class {className} : {typeCSharpName}
 {{
-    private {_metaName} __DP_Meta = {typeof(DynamicProxy).CSharpFullName()}.{nameof(GetAvailableMeta)}(typeof({typeCSharpName}));
+    private {_metaName} __DP_Meta = {typeof(DynamicProxy).DisplayCsharp()}.{nameof(GetAvailableMeta)}(typeof({typeCSharpName}));
 
     //这里要注释掉，如果重写的基类没有无参构造函数，会报错
     //public {className}({_metaName} meta)

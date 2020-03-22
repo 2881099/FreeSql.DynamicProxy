@@ -18,6 +18,13 @@
             <param name="source"></param>
             <returns></returns>
         </member>
+        <member name="M:FreeSql.DynamicProxy.Resolve``1">
+            <summary>
+            获取 动态接口实现 对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
         <member name="P:FreeSql.DynamicProxyBeforeArguments.Sender">
             <summary>
             代理对象
@@ -120,11 +127,11 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:FreeSql.DynamicProxyExtensions.CSharpFullName(System.Type)">
+        <member name="M:FreeSql.DynamicProxyExtensions.DisplayCsharp(System.Type,System.Boolean)">
             <summary>
             获取 Type 的原始 c# 文本表示
             </summary>
-            <param name="that"></param>
+            <param name="type"></param>
             <returns></returns>
         </member>
     </members>

@@ -102,17 +102,17 @@ class Program
 
         var api = DynamicProxy.Resolve<IUserApi>();
         api.Add(new UserInfo { Id = "001", Remark = "add" });
-        Console.WriteLine(JsonConvert.SerializeObject(api.Get("001")));
+        Console.WriteLine(JsonConvert.SerializeObject(api.Get<UserInfo>("001")));
     }
 }
 
 public interface IUserApi
 {
     [HttpGet("api/user")]
-    UserInfo Get(string id);
+    T Get<T>(string id);
 
     [HttpPost("api/user")]
-    void Add(UserInfo user);
+    void Add<T>(T user);
 }
 public class UserInfo
 {

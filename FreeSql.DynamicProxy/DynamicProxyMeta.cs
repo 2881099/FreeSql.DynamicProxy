@@ -52,7 +52,7 @@ namespace FreeSql
                 return Activator.CreateInstance(this.SourceType, true);
 
             if (this.SourceConstructorsMergeParametersLength.TryGetValue(parameters.Length, out var ctors) == false)
-                throw new ArgumentException($"{this.SourceType.CSharpFullName()} 没有定义长度 {parameters.Length} 的构造函数");
+                throw new ArgumentException($"{this.SourceType.DisplayCsharp()} 没有定义长度 {parameters.Length} 的构造函数");
 
             return Activator.CreateInstance(this.SourceType, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, parameters);
         }
