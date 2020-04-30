@@ -60,12 +60,24 @@ namespace AspNetCore
             return $"CustomRepository.GetAsync({key}) value";
         }
 
+        [Custom]
+        public virtual async Task CreateKeyAsync(CustomDto customDto)
+        {
+            await Task.FromResult("");
+            Console.WriteLine($"CustomRepository.CreateAsync({customDto.Key}) value");
+        }
+
         public virtual string Text
         {
             [Custom]
             get;
             set;
         }
+    }
+
+    public class CustomDto
+    {
+        public string Key { get; set; }
     }
 
     class CustomAttribute : FreeSql.DynamicProxyAttribute

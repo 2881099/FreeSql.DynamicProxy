@@ -120,7 +120,7 @@ namespace FreeSql
             foreach (var method in methods)
             {
                 if (method.Name.StartsWith("get_") || method.Name.StartsWith("set_"))
-                    if (type.GetProperty(method.Name.Substring(4), BindingFlags.Instance | BindingFlags.Public) != null) continue;
+                    if (type.GetProperty(method.Name.Substring(4), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) != null) continue;
                 var attrs = method.GetCustomAttributes(false).Select(a => a as DynamicProxyAttribute).Where(a => a != null).ToArray();
                 if (attrs.Any() == false) continue;
                 var attrsIndex = matchedAttributes.Count;

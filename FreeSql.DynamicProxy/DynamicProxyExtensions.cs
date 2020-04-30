@@ -108,7 +108,7 @@ namespace FreeSql
         internal static Type ReturnTypeWithoutTask(this Type that)
         {
             if (that.IsTask() == false) return that;
-            return that.GetGenericArguments().FirstOrDefault();
+            return that.GetGenericArguments().FirstOrDefault() ?? typeof(void);
         }
 
     }

@@ -30,5 +30,13 @@ namespace AspNetCore.Controllers
 
             return "GetAsync OK";
         }
+
+        [HttpGet("3")]
+        async public Task<string> CreateKeyAsync([FromServices]CustomRepository repo, [FromQuery]string key)
+        {
+            await repo.CreateKeyAsync(new CustomDto { Key = key });
+
+            return "CreateKeyAsync OK";
+        }
     }
 }
