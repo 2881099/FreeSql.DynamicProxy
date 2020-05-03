@@ -135,10 +135,7 @@ namespace FreeSql
                 if (method.IsVirtual == false || method.IsFinal)
                 {
                     if (isThrow) throw new ArgumentException($"FreeSql.DynamicProxy 失败提示：{typeCSharpName} 方法 {method.Name} 需要使用 virtual 标记");
-                    return new DynamicProxyMeta(
-                        type, ctors, 
-                        new MemberInfo[0], new DynamicProxyAttribute[0],
-                        null, className, null, null);
+                    continue;
                 }
 
 #if net40

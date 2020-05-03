@@ -7,7 +7,7 @@ public class MyClass
 {
 
     [Cache2(Key = "Get")]
-    public virtual string Get(string key)
+    public string Get(string key)
     {
         return $"MyClass.Get({key}) value";
     }
