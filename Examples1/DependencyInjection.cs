@@ -26,7 +26,7 @@ namespace Examples1
             where TIService : class
             where TService : class, TIService
         {
-            _services.AddTransient<TService, TService>();
+            _services.AddTransient<TIService, TService>();
             return this;
         }
 
