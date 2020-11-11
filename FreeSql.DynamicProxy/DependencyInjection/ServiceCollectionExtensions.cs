@@ -1,4 +1,4 @@
-﻿#if ns20 || ns21
+﻿#if net50 || ns21 || ns20
 
 using System;
 using System.Reflection;

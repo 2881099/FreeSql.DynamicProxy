@@ -16,6 +16,7 @@ namespace FreeSql
         /// 获取 Type 的原始 c# 文本表示
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="isNameSpace"></param>
         /// <returns></returns>
         internal static string DisplayCsharp(this Type type, bool isNameSpace = true)
         {
@@ -93,11 +94,11 @@ namespace FreeSql
         {
             if (that == typeof(void)) return false;
             if (that == typeof(Task)) return true;
-#if ns21
+#if net50 || ns21
             if (that == typeof(ValueTask)) return true;
 #endif
 
-#if ns20 || ns21
+#if net50 || ns21 || ns20
             if (that.IsGenericType && that.Namespace == "System.Threading.Tasks" && (that.Name == typeof(Task<object>).Name || that.Name == typeof(ValueTask<object>).Name)) return true;
 #else
             if (that.IsGenericType && that.Namespace == "System.Threading.Tasks" && that.Name == typeof(Task<object>).Name) return true;

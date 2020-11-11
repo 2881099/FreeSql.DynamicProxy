@@ -126,7 +126,7 @@ namespace FreeSql
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => method));
                 matchedAttributes.AddRange(attrs);
-#if ns20 || ns21
+#if net50 || ns21 || ns20
                 matchedAttributesFromServices.AddRange(attrs.Select(af => af.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                     .Where(gf => gf.GetCustomAttribute(typeof(DynamicProxyFromServicesAttribute)) != null).ToArray()));
 #else
@@ -218,7 +218,7 @@ namespace FreeSql
                 var attrsIndex = matchedAttributes.Count;
                 matchedMemberInfos.AddRange(attrs.Select(a => prop2));
                 matchedAttributes.AddRange(attrs);
-#if ns20 || ns21
+#if net50 || ns21 || ns20
                 matchedAttributesFromServices.AddRange(attrs.Select(af => af.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                     .Where(gf => gf.GetCustomAttribute(typeof(DynamicProxyFromServicesAttribute)) != null).ToArray()));
 #else
@@ -372,7 +372,7 @@ public class {className} : {typeCSharpName}
                 isCompile == false ? proxyCscode : null, className, proxyAssembly, proxyType);
         }
 
-#if ns20 || ns21
+#if net50 || ns21 || ns20
 
         static Lazy<CSScriptLib.RoslynEvaluator> _compiler = new Lazy<CSScriptLib.RoslynEvaluator>(() =>
         {
